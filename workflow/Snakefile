@@ -26,8 +26,8 @@ print(HAPS)
 
 rule all: 
     input: 
-        i1 = "actions_all.tsv",
-        i2 = expand('actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS)
+        i1 = "res/actions_all.tsv",
+        i2 = expand('res/actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS)
 
 rule subset_vcf_to_region:
     input:
@@ -48,22 +48,22 @@ rule subset_vcf_to_region:
 
 rule combine_actions:
     input:
-        expand('actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS),
+        expand('res/actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS),
     output:
-        "actions_all.tsv"
+        "res/actions_all.tsv"
     shell:
         """
-        cat {input} >> {output}
+        cat {input} > {output}
         """
 
 rule get_action_line:
     input: 
-        "summarylists/{region}_{sample}_h{hap}_summary.tsv"
+        "res/summarylists/{region}_{sample}_h{hap}_summary.tsv"
     output: 
-        "actions/{region}_{sample}_h{hap}.tsv"
+        "res/actions/{region}_{sample}_h{hap}.tsv"
     shell:
         """
-        Rscript scripts/phasing_helpers.R \
+        Rscript workflow/scripts/phasing_helpers.R \
               --function_name evaluate_summarylist \
               --summarylist {input} \
               --actionlist {output}
@@ -73,10 +73,10 @@ rule get_summarylist:
     input:
         haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam_tags.tsv"
     output:
-        "summarylists/{region}_{sample}_h{hap}_summary.tsv"
+        "res/summarylists/{region}_{sample}_h{hap}_summary.tsv"
     shell:
         """
-        Rscript scripts/phasing_helpers.R \
+        Rscript workflow/scripts/phasing_helpers.R \
               --function_name collect_whatshap_res \
               --haptags {input.haptags} \
               --sample {wildcards.sample} \
@@ -99,7 +99,7 @@ rule get_haptags:
 
     shell:
         """
-        Rscript scripts/phasing_helpers.R \
+        Rscript workflow/scripts/phasing_helpers.R \
               --function_name determine_phase_with_whatshap \
               --aln_bam {input.bam} \
               --region {wildcards.region} \
@@ -122,7 +122,7 @@ rule get_bam:
         samtools_bin = config['samtools_bin']
     shell:
         """
-        Rscript scripts/phasing_helpers.R \
+        Rscript workflow/scripts/phasing_helpers.R \
               --function_name aln_chunks_to_minimap \
               --res_path {params.res_path} \
               --region {wildcards.region} \
