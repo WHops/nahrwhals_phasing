@@ -1,0 +1,167 @@
+
+bold = "\033[1m"
+green = "\033[92m"
+end = "\033[0m"
+msg = f"""{green}{bold}) It's rephasing time! :) \n{end}{end}"""
+sys.stderr.write(msg)
+
+configfile: "config/Snake.config.json"
+
+REGION_FILE = config['region_file']
+SAMPLE_FILE = config['sample_file']
+
+f = open(REGION_FILE)
+REGIONS = f.read().split("\n")[:-1]
+f.close()
+print(REGIONS)
+
+f = open(SAMPLE_FILE)
+SAMPLES = f.read().split("\n")[:-1]
+f.close()
+print(SAMPLES)
+
+HAPS = ['1', '2']
+print(HAPS)
+
+
+rule all: 
+    input: 
+        i1 = "actions_all.tsv",
+        i2 = expand('actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS)
+
+rule subset_vcf_to_region:
+    input:
+        vcf = config['vcf_dir']
+    output:
+        out = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz'
+    run:
+        region = wildcards.region
+
+        chr, start, end = region. split('-')
+
+        shell(
+        """
+        tabix {input.vcf}/1kGP*{chr}.filtered*.vcf.gz {chr}:{start}-{end} -h > {output}
+        gzip {output}
+        """
+        )
+
+rule combine_actions:
+    input:
+        expand('actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS),
+    output:
+        "actions_all.tsv"
+    shell:
+        """
+        cat {input} >> {output}
+        """
+
+rule get_action_line:
+    input: 
+        "summarylists/{region}_{sample}_h{hap}_summary.tsv"
+    output: 
+        "actions/{region}_{sample}_h{hap}.tsv"
+    shell:
+        """
+        Rscript scripts/phasing_helpers.R \
+              --function_name evaluate_summarylist \
+              --summarylist {input} \
+              --actionlist {output}
+        """
+
+rule get_summarylist:
+    input:
+        haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam_tags.tsv"
+    output:
+        "summarylists/{region}_{sample}_h{hap}_summary.tsv"
+    shell:
+        """
+        Rscript scripts/phasing_helpers.R \
+              --function_name collect_whatshap_res \
+              --haptags {input.haptags} \
+              --sample {wildcards.sample} \
+              --region {wildcards.region} \
+              --hap {wildcards.hap} \
+              --summarylist_link {output}
+        """
+
+rule get_haptags:
+    input:
+        bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam",
+        vcf_allsamples = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz'
+    output:
+        haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam_tags.tsv"
+    params:
+        hg38_fa = config['hg38_fa'],
+        vcf_dir = config['vcf_dir'],
+        whatshap_bin = config['whatshap_bin']
+
+
+    shell:
+        """
+        Rscript scripts/phasing_helpers.R \
+              --function_name determine_phase_with_whatshap \
+              --aln_bam {input.bam} \
+              --region {wildcards.region} \
+              --sample {wildcards.sample} \
+              --hap {wildcards.hap} \
+              --hg38_fa {params.hg38_fa} \
+              --vcf_dir {params.vcf_dir} \
+              --subset_vcf_allsamples {input.vcf_allsamples} \
+              --whatshap_bin {params.whatshap_bin}
+        """
+
+rule get_bam:
+    input:
+    output:
+        bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam"
+    params:
+        res_path = config['res_path'],
+        hg38_mmi = config['hg38_mmi'],
+        mm2_bin = config['mm2_bin'],
+        samtools_bin = config['samtools_bin']
+    shell:
+        """
+        Rscript scripts/phasing_helpers.R \
+              --function_name aln_chunks_to_minimap \
+              --res_path {params.res_path} \
+              --region {wildcards.region} \
+              --sample {wildcards.sample} \
+              --hap {wildcards.hap} \
+              --hg38_mmi {params.hg38_mmi} \
+              --mm2_bin {params.mm2_bin} \
+              --samtools_bin {params.samtools_bin}
+        """
+
+
+# General rules that should be fine regardless of context
+
+rule index_bam:
+    input: 
+        '{foo}.bam'
+    output:
+        '{foo}.bam.bai'
+    shell:
+        """
+        samtools index {input}
+        """
+
+rule compress_vcf:
+    input:
+        '{foo}.vcf'
+    output:
+        '{foo}.vcf.gz',
+    shell:
+        """
+        bgzip -c {input} > {output}
+        """
+   
+rule index_vcf:
+    input:
+        '{foo}.vcf.gz'
+    output:
+        '{foo}.vcf.gz.tbi'
+    shell:
+        """
+        tabix -p vcf {input}
+        """

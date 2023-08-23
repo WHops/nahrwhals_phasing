@@ -1,0 +1,21 @@
+{
+
+    "reference"     : "/g/korbel/hoeps/projects/huminvs/data/hg38/ref_chr_1_22XY.fa",
+    "mosaicatcher"  : "/g/korbel/hoeps/programs/mosaicatcher/build/mosaic",
+    "plot_script"   : "/g/korbel/hoeps/programs/mosaicatcher/R/qc.R",
+    "samtools_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/samtools",
+    "bcftools_bin"      : "bcftools",
+    "mm2_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/minimap2",
+    "whatshap_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/whatshap",
+
+    "hg38_fa" :  "/g/korbel/hoeps/projects/huminvs/data/hg38/ref_chr_1_22XY.fa",
+    "hg38_mmi" : "/g/korbel/hoeps/projects/huminvs/data/hg38/ref_chr_1_22XY.mmi",
+    "vcf_dir" :  "/g/korbel/hoeps/projects/nahr/wgs_lab/nygc",
+    "res_path" : "/g/korbel/hoeps/projects/nahr/ntk_interesting_loci/ntk-scan-snakemake/res_outer_inv_sv_publication/",
+
+    "region_file" : "config/regions.txt",
+    "sample_file" : "config/samples.txt"
+
+}
+
+
