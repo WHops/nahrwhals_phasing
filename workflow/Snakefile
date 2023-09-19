@@ -26,7 +26,7 @@ print(HAPS)
 
 rule all: 
     input: 
-        i1 = expand("res/actions_all_{chunklen}.tsv",chunklen=config['chunklen'])
+        i1 = expand("res/actions_all_{chunklen}.tsv",chunklen=config['chunklen']),
         i2 = expand('res/actions/{region}_{sample}_h{hap}_{chunklen}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS, chunklen=config['chunklen'])
 
 rule subset_vcf_to_region:
