@@ -7,6 +7,7 @@
     "bcftools_bin"      : "bcftools",
     "mm2_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/minimap2",
     "whatshap_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/whatshap",
+    "bedtools_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/bedtools",
 
     "hg38_fa" :  "/g/korbel/hoeps/projects/huminvs/data/hg38/ref_chr_1_22XY.fa",
     "hg38_mmi" : "/g/korbel/hoeps/projects/huminvs/data/hg38/ref_chr_1_22XY.mmi",
@@ -14,7 +15,8 @@
     "res_path" : "/g/korbel/hoeps/projects/nahr/ntk_interesting_loci/ntk-scan-snakemake/res_outer_inv_sv_publication/",
 
     "region_file" : "config/regions.txt",
-    "sample_file" : "config/samples.txt"
+    "sample_file" : "config/samples.txt",
+    "chunklen" :  "10000"
 
 }
 
