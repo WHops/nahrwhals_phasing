@@ -105,10 +105,11 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
   shred_seq_bedtools(asm_fasta, asm_chunked_fasta, chunklen, bedtools_bin)
 
   # Make some assert statements to make sure that asm_chunked_fasta has (1) been written within the last second and (2) is roughly the same size as asm_fasta 
-  assert_that(file.exists(asm_chunked_fasta))
-  assert_that(file.info(asm_chunked_fasta)$mtime > Sys.time() - 1)
-  assert_that(file.info(asm_chunked_fasta)$size > file.info(asm_fasta)$size * 0.9)
-  assert_that(file.info(asm_chunked_fasta)$size < file.info(asm_fasta)$size * 1.1)
+  
+  assertthat::assert_that(file.exists(asm_chunked_fasta))
+  assertthat::assert_that(file.info(asm_chunked_fasta)$mtime > Sys.time() - 1)
+  assertthat::assert_that(file.info(asm_chunked_fasta)$size > file.info(asm_fasta)$size * 0.9)
+  assertthat::assert_that(file.info(asm_chunked_fasta)$size < file.info(asm_fasta)$size * 1.1)
   
   outfile_sam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '.sam')
   outfile_bam_unsrt = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_unsrt.bam')
