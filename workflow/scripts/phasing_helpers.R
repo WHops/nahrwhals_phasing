@@ -89,7 +89,7 @@ shred_seq_bedtools <- function(infasta,
 #' @author Wolfram Hoeps
 aln_chunks_to_minimap <- function(res_path, region, sample, hap,
                                   hg38_mmi, minimap2_bin, samtools_bin,
-                                  bedtool_bin, chunklen = 10000) {
+                                  bedtools_bin, chunklen = 10000) {
   # Find the correct chunked reads fasta
   dir_path = paste0(res_path, region, '/fasta')
 
