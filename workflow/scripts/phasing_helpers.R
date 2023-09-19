@@ -266,6 +266,7 @@ parser$add_argument("--vcf_dir")
 parser$add_argument("--mm2_bin")
 parser$add_argument("--samtools_bin")
 parser$add_argument("--whatshap_bin")
+parser$add_argument("--bedtools_bin")
 parser$add_argument("--subset_vcf_allsamples")
 
 
