@@ -13,9 +13,8 @@
     "vcf_dir" :  "/g/korbel/hoeps/projects/nahr/wgs_lab/nygc",
     "res_path" : "/g/korbel/hoeps/projects/nahr/ntk_interesting_loci/ntk-scan-snakemake/res_outer_inv_sv_publication/",
 
-    "region_file" : "config/regions.txt",
-    "sample_file" : "config/samples.txt"
+    "region_file" : "config/regions_37.txt",
+    "sample_file" : "config/samples_all.txt"
 
 }
-
 
