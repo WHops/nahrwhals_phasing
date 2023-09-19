@@ -1,15 +1,93 @@
+#' Chunkify query fasta
+#'
+#' @description This is a helperfunction calling bedtools to
+#' chop a query sequence into chunks.
+#'
+#' @param infasta A link to a single-seq fasta to be chopped
+#' @param outfasta_chunk A link to the output path for a chopped multi-seq fasta.
+#' @param chunklen length of sequence chunks in bp
+#' @param params a list with all NAHRwhals parameters
+#' @return nothing. But output files written.
+#'
+#' @author Wolfram Hoeps
+#' @export
+shred_seq_bedtools <- function(infasta,
+                               outfasta_chunk,
+                               chunklen,
+                               bedtools_bin) {
 
-aln_chunks_to_minimap <- function(res_path, region, sample, hap, hg38_mmi, minimap2_bin, samtools_bin){
-  
+  chunklen = as.numeric(chunklen)
+  # Write a temporary bedfile that will be removed at the end of the function
+  bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+  fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
+
+  get_fasta_info(infasta, fasta_awk_tmp_file)
+  # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta
+  # To work well.
+  name_len_df <- read.table(fasta_awk_tmp_file)
+  contigname <- sub(">", "", (name_len_df)[1, ])
+  contiglen <- as.numeric((name_len_df)[2, ])
+
+  bed_df <- data.frame(
+    seqnames = contigname,
+    start = sprintf("%d", seq(0, contiglen - (contiglen %% chunklen), by = chunklen)),
+    end = sprintf("%d", pmin(seq(0, contiglen - (contiglen %% chunklen), by = chunklen) + (chunklen - 1), contiglen))
+  )
+
+  write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
+
+
+  system(paste0("rm ", infasta, ".fai"))
+
+  sedcmd <- "sed -r \'s/(.*):/\\1_/'"
+  system(paste0(bedtools_bin, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
+
+  system(paste0("rm ", bed_tmp_file))
+  system(paste0("rm ", fasta_awk_tmp_file))
+
+  # Make a print statement informing the user about the files that have been written, and the chunklen used.
+  print(paste0("Wrote ", outfasta_chunk, " with chunklen ", chunklen, " bp."))
+}
+
+
+
+
+
+
+#' @title aln_chunks_to_minimap
+#' @description Aligns chunks of the assembly to the reference genome using minimap2
+#' @param res_path Path to the results folder
+#' @param region Region to be aligned
+#' @param sample Sample to be aligned
+#' @param hap Haplotype to be aligned
+#' @param hg38_mmi Path to the minimap2 index of the reference genome
+#' @param minimap2_bin Path to the minimap2 binary
+#' @param samtools_bin Path to the samtools binary
+#' @return Path to the bam file
+#' @export
+#' @author Wolfram Hoeps
+aln_chunks_to_minimap <- function(res_path, region, sample, hap,
+                                  hg38_mmi, minimap2_bin, samtools_bin,
+                                  bedtool_bin, chunklen = 10000) {
   # Find the correct chunked reads fasta
   dir_path = paste0(res_path, region, '/fasta')
 
-  # Criteria: filename has to match sample, hapx or hx and end on y.fa.chunk.fa
-  regex <- paste0("^.*", sample, ".*(h|hap)", hap, ".*y\\.fa\\.chunk\\.fa$")
 
+  Criteria: filename has to match sample, hapx or hx and end on y.fa
+  regex <- paste0("^.*", sample, ".*(h|hap)", hap, ".*y\\.fa$")
   
   # And then we grep those out of the whole list. 
-  asm_chunked_fasta <- grep(regex, list.files(path = dir_path, full.names = TRUE), value = TRUE)
+  asm_fasta <- grep(regex, list.files(path = dir_path, full.names = TRUE), value = TRUE)
+  asm_chunked_fasta = paste0(asm_fasta, '_chunked_phasing.fa')
+
+  # Use shred_seq_bedtools to turn this into chunks.
+  shred_seq_bedtools(asm_fasta, asm_chunked_fasta, chunklen, bedtools_bin)
+
+  # Make some assert statements to make sure that asm_chunked_fasta has (1) been written within the last second and (2) is roughly the same size as asm_fasta 
+  assert_that(file.exists(asm_chunked_fasta))
+  assert_that(file.info(asm_chunked_fasta)$mtime > Sys.time() - 1)
+  assert_that(file.info(asm_chunked_fasta)$size > file.info(asm_fasta)$size * 0.9)
+  assert_that(file.info(asm_chunked_fasta)$size < file.info(asm_fasta)$size * 1.1)
   
   outfile_sam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '.sam')
   outfile_bam_unsrt = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_unsrt.bam')
@@ -29,7 +107,9 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap, hg38_mmi, minim
   return(outfile_bam)
 }
 
-determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa, vcf_dir, subset_vcf_allsamples, whatshap_bin){
+
+determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa, 
+                                          vcf_dir, subset_vcf_allsamples, whatshap_bin){
   
   
   # Some not so pleasant renamings. The age-old problem with GM vs NA names...
@@ -139,7 +219,8 @@ evaluate_summarylist <- function(summarylist, actionlist){
   # Determine action 
   if (asm_hap == mapped_hap){
     action = 'keep'
-  } else if ((asm_hap == 1) & (mapped_hap == 2) | (asm_hap == 2) & (mapped_hap == 1)){
+  } else if ((asm_hap == 1) & (mapped_hap == 2) |
+  \ (asm_hap == 2) & (mapped_hap == 1)){
     action = 'flip'
   } else if (mapped_hap == 'unclear'){
     action = 'unclear'
@@ -174,6 +255,7 @@ parser$add_argument("--res_path")
 parser$add_argument("--region")
 parser$add_argument("--sample")
 parser$add_argument("--hap")
+parser$add_argument("--chunklen")
 parser$add_argument("--aln_bam")
 parser$add_argument("--haptags")
 parser$add_argument("--summarylist_link")
@@ -194,7 +276,7 @@ args <- parser$parse_args()
 
 
 if (args$function_name == "aln_chunks_to_minimap") {
-  aln_chunks_to_minimap(args$res_path, args$region, args$sample, args$hap, args$hg38_mmi, args$mm2_bin, args$samtools_bin)
+  aln_chunks_to_minimap(args$res_path, args$region, args$sample, args$hap, args$hg38_mmi, args$mm2_bin, args$samtools_bin, args$bedtools_bin, args$chunklen)
 } else if (args$function_name == "determine_phase_with_whatshap") {
   determine_phase_with_whatshap(args$aln_bam, args$region, args$sample, args$hap, args$hg38_fa, args$vcf_dir, args$subset_vcf_allsamples, args$whatshap_bin)
 } else if (args$function_name == "collect_whatshap_res") {
