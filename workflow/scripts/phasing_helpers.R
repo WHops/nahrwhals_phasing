@@ -16,6 +16,7 @@ shred_seq_bedtools <- function(infasta,
                                chunklen,
                                bedtools_bin) {
 
+  chunklen = as.numeric(chunklen)
   # Write a temporary bedfile that will be removed at the end of the function
   bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
   fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
