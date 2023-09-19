@@ -48,7 +48,7 @@ rule subset_vcf_to_region:
 
 rule combine_actions:
     input:
-        expand('res/actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS),
+        expand('res/actions/{region}_{sample}_h{hap}_{chunklen}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS, chunklen=config['chunklen']),
     output:
         "res/actions_all.tsv"
     shell:
