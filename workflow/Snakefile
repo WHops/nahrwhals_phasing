@@ -27,7 +27,7 @@ print(HAPS)
 rule all: 
     input: 
         i1 = "res/actions_all.tsv",
-        i2 = expand('res/actions/{region}_{sample}_h{hap}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS)
+        i2 = expand('res/actions/{region}_{sample}_h{hap}_{chunklen}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS, chunklen=config['chunklen'])
 
 rule subset_vcf_to_region:
     input:
@@ -58,9 +58,9 @@ rule combine_actions:
 
 rule get_action_line:
     input: 
-        "res/summarylists/{region}_{sample}_h{hap}_summary.tsv"
+        "res/summarylists/{region}_{sample}_h{hap}_{chunklen}_summary.tsv"
     output: 
-        "res/actions/{region}_{sample}_h{hap}.tsv"
+        "res/actions/{region}_{sample}_h{hap}_{chunklen}.tsv"
     shell:
         """
         Rscript workflow/scripts/phasing_helpers.R \
@@ -71,9 +71,9 @@ rule get_action_line:
 
 rule get_summarylist:
     input:
-        haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam_tags.tsv"
+        haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam_tags.tsv"
     output:
-        "res/summarylists/{region}_{sample}_h{hap}_summary.tsv"
+        "res/summarylists/{region}_{sample}_h{hap}_{chunklen}_summary.tsv"
     shell:
         """
         Rscript workflow/scripts/phasing_helpers.R \
@@ -87,10 +87,10 @@ rule get_summarylist:
 
 rule get_haptags:
     input:
-        bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam",
+        bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam",
         vcf_allsamples = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz'
     output:
-        haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam_tags.tsv"
+        haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam_tags.tsv"
     params:
         hg38_fa = config['hg38_fa'],
         vcf_dir = config['vcf_dir'],
@@ -114,7 +114,7 @@ rule get_haptags:
 rule get_bam:
     input:
     output:
-        bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}.bam"
+        bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam"
     params:
         res_path = config['res_path'],
         hg38_mmi = config['hg38_mmi'],
