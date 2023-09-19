@@ -1,3 +1,24 @@
+#' Extracts the name and length of each sequence in a fasta file.
+#'
+#' This function takes an input fasta file and an output file as arguments,
+#' and runs a 'gawk' command to extract the name and length of each sequence
+#' in the fasta file. The extracted information is saved to the output file.
+#'
+#' @param inputfa A character string specifying the path to the input fasta file.
+#' @param outputinfo A character string specifying the path to the output file.
+#'
+#' @return Nothing is returned by the function, but the sequence names and lengths are saved to the output file.
+#' @author Wolfram Hoeps
+#' @export
+get_fasta_info <- function(inputfa, outputinfo) {
+  # Run the gawk command to get the fasta file info
+  cmd <- paste0(
+    "gawk '/^>/{if (l!=\"\") print l; print; l=0; next}{l+=length($0)}END{print l}' ",
+    inputfa, " > ", outputinfo
+  )
+  system(cmd)
+}
+
 #' Chunkify query fasta
 #'
 #' @description This is a helperfunction calling bedtools to
