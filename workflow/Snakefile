@@ -119,7 +119,9 @@ rule get_bam:
         res_path = config['res_path'],
         hg38_mmi = config['hg38_mmi'],
         mm2_bin = config['mm2_bin'],
-        samtools_bin = config['samtools_bin']
+        samtools_bin = config['samtools_bin'],
+        bedtools_bin = config['bedtools_bin'],
+        chunklen = config['chunklen']
     shell:
         """
         Rscript workflow/scripts/phasing_helpers.R \
@@ -130,7 +132,9 @@ rule get_bam:
               --hap {wildcards.hap} \
               --hg38_mmi {params.hg38_mmi} \
               --mm2_bin {params.mm2_bin} \
-              --samtools_bin {params.samtools_bin}
+              --samtools_bin {params.samtools_bin} \
+              --bedtools_bin {params.bedtools_bin} \
+              --chunklen {params.chunklen}
         """
 
 
