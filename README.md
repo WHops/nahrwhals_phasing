@@ -9,6 +9,11 @@ Phase a vcf into 1000 genomes snps by NYCG.
 
 ## Description
 
+The Snakefile takes as input a series of phased SNP vcfs (one per chromsoome), and the NW output folders. 
+It then checks all aligned reads, assigns them a phase, and determines statistics for the most likely phase. 
+
+Final output, at the moment, is actions_all.tsv, a table with instructions. There is an execute_actions somewhere but it's not included in the snakething so far. 
+
 <img src="https://github.com/WHops/nahrwhals_phasing/blob/main/dag_one_region.png?raw=true">
 
 ## Usage
