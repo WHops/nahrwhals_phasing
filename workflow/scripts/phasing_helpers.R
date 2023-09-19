@@ -111,9 +111,9 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
   assertthat::assert_that(file.info(asm_chunked_fasta)$size > file.info(asm_fasta)$size * 0.9)
   assertthat::assert_that(file.info(asm_chunked_fasta)$size < file.info(asm_fasta)$size * 1.1)
   
-  outfile_sam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '.sam')
-  outfile_bam_unsrt = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_unsrt.bam')
-  outfile_bam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '.bam')
+  outfile_sam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, ,'_', chunklen, '.sam')
+  outfile_bam_unsrt = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_', chunklen,'_unsrt.bam')
+  outfile_bam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_', chunklen, '.bam')
 
   minimap2_cmd = paste0(minimap2_bin, " -a ", hg38_mmi, " ", 
                         asm_chunked_fasta, " > ",  outfile_sam)
@@ -247,7 +247,7 @@ evaluate_summarylist <- function(summarylist, actionlist){
     action = 'unclear'
   }
 
-
+  # Columns of the final_actionlist: region, sample, asm_hap, action, reads_H1, reads_H2, reads_unphased, h1_to_h2_fract, none_fract
   final_actionlist = paste0(paste(region, 
                                   sample,
                                   asm_hap, 
