@@ -111,7 +111,7 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
   assertthat::assert_that(file.info(asm_chunked_fasta)$size > file.info(asm_fasta)$size * 0.9)
   assertthat::assert_that(file.info(asm_chunked_fasta)$size < file.info(asm_fasta)$size * 1.1)
   
-  outfile_sam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, ,'_', chunklen, '.sam')
+  outfile_sam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region ,'_', chunklen, '.sam')
   outfile_bam_unsrt = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_', chunklen,'_unsrt.bam')
   outfile_bam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_', chunklen, '.bam')
 
