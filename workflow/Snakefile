@@ -2,7 +2,7 @@
 bold = "\033[1m"
 green = "\033[92m"
 end = "\033[0m"
-msg = f"""{green}{bold}) It's rephasing time! :) \n{end}{end}"""
+msg = f"""{green}{bold} It's rephasing time! :) \n{end}{end}"""
 sys.stderr.write(msg)
 
 configfile: "config/Snake.config.json"
@@ -53,7 +53,8 @@ rule combine_actions:
         "res/actions_all_{chunklen}.tsv"
     shell:
         """
-        cat {input} > {output}
+        echo {input}
+        echo {input} | xargs cat > {output}
         """
 
 rule get_action_line:
