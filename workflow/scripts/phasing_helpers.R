@@ -219,8 +219,7 @@ evaluate_summarylist <- function(summarylist, actionlist){
   # Determine action 
   if (asm_hap == mapped_hap){
     action = 'keep'
-  } else if ((asm_hap == 1) & (mapped_hap == 2) |
-  \ (asm_hap == 2) & (mapped_hap == 1)){
+  } else if ((asm_hap == 1) & (mapped_hap == 2) | (asm_hap == 2) & (mapped_hap == 1)){
     action = 'flip'
   } else if (mapped_hap == 'unclear'){
     action = 'unclear'
