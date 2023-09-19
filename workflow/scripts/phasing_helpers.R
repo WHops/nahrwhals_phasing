@@ -73,7 +73,7 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
   dir_path = paste0(res_path, region, '/fasta')
 
 
-  Criteria: filename has to match sample, hapx or hx and end on y.fa
+  #Criteria: filename has to match sample, hapx or hx and end on y.fa
   regex <- paste0("^.*", sample, ".*(h|hap)", hap, ".*y\\.fa$")
   
   # And then we grep those out of the whole list. 
