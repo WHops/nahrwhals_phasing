@@ -46,25 +46,16 @@ process_vcf <- function(vcf_filename, action_list, output_filename) {
         action <- "missing_unphase"
       }
       
-      print(paste(region_id, sample, action, genotype))
       
-      switch(action,
-             flip = {
-               stats$flip <- stats$flip + 1
-               vcf@gt[i, sample] <- ifelse(genotype == "0|1", "1|0", ifelse(genotype == "1|0", "0|1", genotype))
-             },
-             unphase = {
-               stats$unphase <- stats$unphase + 1
-               vcf@gt[i, sample] <- ifelse(genotype %in% c("0|1", "1|0"), "0/1", genotype)
-             },
-             missing_unphase = {
-               stats$missing_unphase <- stats$missing_unphase + 1
-               vcf@gt[i, sample] <- ifelse(genotype %in% c("0|1", "1|0"), "0/1", genotype)
-             },
-             keep = {
-               stats$keep <- stats$keep + 1
-             }
-      )
+      # Pre-compute common elements
+      parts <- strsplit(genotype, ":", fixed=TRUE)[[1]]
+      gt <- parts[1]
+      custom_phase_block <- ifelse(length(parts) > 1, paste0(":", parts[2]), "")
+      
+      modified_gt = modify_genotype(gt, action, stats)$modified_gt 
+      # Update the genotype with any modifications, keeping the custom phase block
+      vcf@gt[i, sample] <- paste0(modified_gt, custom_phase_block)
+      
     }
   }
   
@@ -72,11 +63,68 @@ process_vcf <- function(vcf_filename, action_list, output_filename) {
   return(stats)
 }
 
-flip_actions <- '~/cluster10/g/korbel/hoeps/projects/nahr/phaselab/snake_approach/res/actions_all.tsv'
-unphased_vcf <- '~/Desktop/all2.vcf'
-output_filename <- "~/Desktop/test.vcf.gz"
 
-actions_df <- read.table(flip_actions, header=FALSE, stringsAsFactors=FALSE)
+#
+# modify_genotype - Modify a genotype based on a specified action and update statistics.
+#
+# Args:
+#   gt: A character vector representing the genotype to modify.
+#   action: A character string representing the action to perform on the genotype.
+#   stats: A named list representing the statistics to update.
+#
+# Returns:
+#   A character vector representing the modified genotype.
+#
+# Example:
+#   modify_genotype(c("0|1", "1|0"), "flip", list("flipped" = 0))
+modify_genotype <- function(gt, action, stats) {
+  # Update stats according to action
+  stats[[action]] <- stats[[action]] + 1
+  
+  switch(action,
+         flip = {
+           gt_parts <- strsplit(gt, "\\|", fixed=FALSE)[[1]]
+           modified_gt <- paste(rev(gt_parts), collapse="|")
+         },
+         unphase = {
+           gt_parts <- strsplit(gt, "\\|", fixed=FALSE)[[1]]
+           sorted_gt_parts <- sort(gt_parts)
+           modified_gt <- paste(sorted_gt_parts, collapse="/")
+         },
+         missing_unphase = {
+           gt_parts <- strsplit(gt, "\\|", fixed=FALSE)[[1]]
+           sorted_gt_parts <- sort(gt_parts)
+           modified_gt <- paste(sorted_gt_parts, collapse="/")
+         },
+         keep = {
+           modified_gt <- gt  # No changes to the genotype
+         },
+         modified_gt <- gt  # Default case, no changes to the genotype
+  )
+  
+  return(list(modified_gt = modified_gt, stats = stats))
+}
+
+
+library(argparse)
+
+parser <- ArgumentParser()
+
+parser$add_argument("--vcf", help="VCF file to flip")
+parser$add_argument("--actions", help="Actions file")
+parser$add_argument("--vcfout", help="Output VCF file")
+parser$add_argument("--logout", help="Output log file")
+
+args <- parser$parse_args()
+
+actions_df <- read.table(args$actions, header=FALSE, stringsAsFactors=FALSE)
 actions <- process_actions(actions_df)
-stats <- process_vcf(unphased_vcf, actions, output_filename)
-print(stats)
+stats <- process_vcf(args$vcf, actions, args$vcfout)
+write.table(stats, file=args$logout, row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t")
+
+
+# if (interactive()) {
+#   flip_actions <- '~/cluster11/g/korbel/hoeps/projects/nahr/phaselab/snake_approach/res/actions_all_50000.tsv'
+#   unphased_vcf <- '~/PhD/projects/nahrcall/phaselab/nahrwhals_phasing/data/all.vcf'
+#   output_filename <- "~/Desktop/test.vcf.gz"
+# }
