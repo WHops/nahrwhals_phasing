@@ -24,10 +24,25 @@ HAPS = ['1', '2']
 print(HAPS)
 
 
+
+
 rule all: 
     input: 
         i1 = expand("res/actions_all_{chunklen}.tsv",chunklen=config['chunklen']),
-        i2 = expand('res/actions/{region}_{sample}_h{hap}_{chunklen}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS, chunklen=config['chunklen'])
+        i2 = expand('res/actions/{region}_{sample}_h{hap}_{chunklen}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS, chunklen=config['chunklen']),
+        i3 = 'res/vcf/NW_flipped_{chunklen}.vcf
+
+ rule flip:
+    input:
+        vcf = config['nw_vcf'],
+        actions = expand("res/actions_all_{chunklen}.tsv",chunklen=config['chunklen'])
+    output:
+        vcf = 'res/vcf/NW_flipped_{chunklen}.vcf',
+        log = 'res/vcf/NW_flipped_{chunklen}.log'
+    shell:
+        """
+        Rscript workflow/scripts/vcfflip_tools.R --vcf {input.vcf} --actions {input.actions} --vcfout {output.vcf} --logout {output.log} 
+        """
 
 rule subset_vcf_to_region:
     input:
