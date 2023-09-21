@@ -132,7 +132,7 @@ rule get_bam:
     output:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam"
     params:
-        res_path = config['res_path'],
+        nw_res_path = config['nw_res_path'],
         hg38_mmi = config['hg38_mmi'],
         mm2_bin = config['mm2_bin'],
         samtools_bin = config['samtools_bin'],
@@ -142,7 +142,7 @@ rule get_bam:
         """
         Rscript workflow/scripts/phasing_helpers.R \
               --function_name aln_chunks_to_minimap \
-              --res_path {params.res_path} \
+              --res_path {params.nw_res_path} \
               --region {wildcards.region} \
               --sample {wildcards.sample} \
               --hap {wildcards.hap} \
