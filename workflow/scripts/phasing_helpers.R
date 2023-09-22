@@ -157,23 +157,45 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   bgzip_cmd_2 = paste0('bgzip ', subset_vcf_singlesample)
   index_cmd = paste0('tabix -p vcf ', subset_vcf_singlesample, '.gz')
 
+  verbose = T
+
+  # I think here the problem is that the file may exist already, but is still being written to. Or the derivatives are not there yet.
   if (!file.exists(subset_vcf_allsamples)){
+    if (verbose){
+      print('I just checked, and the file does not exist yet.')
+      print(paste0('The missing file is called: ', subset_vcf_allsamples))
+      print(tabix_cmd)
+      print(bgzip_cmd_1)
+    }
     system(tabix_cmd)
     system(bgzip_cmd_1)
   }
 
   if (!file.exists(paste0(subset_vcf_singlesample, '.gz.tbi'))){
+    if (verbose){
+      print('I just checked, and the file does not exist yet.')
+      print(paste0('The missing file is called: ', subset_vcf_singlesample, '.gz.tbi'))
+      print(bcftools_cmd)
+      print(bgzip_cmd_2)
+      print(index_cmd)
+    }
     system(bcftools_cmd)
     system(bgzip_cmd_2)
     system(index_cmd)
   }
+
+  # Wait for 3 second
+  Sys.sleep(3)
+
   whatshap_cmd = paste0(
     whatshap_bin, 
     ' haplotag ',
     '-o ',  aln_bam, '_tagged.bam ',
     '--reference ', hg38_fa, ' ',
-    subset_vcf_singlesample,'.gz', ' --sample ', vcf_samplename, ' ',
-    '--output-haplotag-list ', aln_bam, '_tags.tsv --ignore-read-groups ',
+    subset_vcf_singlesample,'.gz', 
+    ' --sample ', vcf_samplename, 
+    ' --output-haplotag-list ', aln_bam, '_tags.tsv', 
+    ' --ignore-read-groups ',
     aln_bam
   )
   
