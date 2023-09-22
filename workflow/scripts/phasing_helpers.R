@@ -152,9 +152,9 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   # tabix_cmd = paste0(tabix_bin, ' ', phase_vcf_path, ' ', chr, ':', start, '-', end, ' -h > ', subset_vcf_allsamples)
   # bgzip_cmd_1 = paste0('bgzip ', subset_vcf_allsamples)
 
-  bcftools_cmd = paste0(bcftools_bin, ' view -s ', vcf_samplename, ' ', subset_vcf_allsamples, ' > ', subset_vcf_singlesample)
-  bgzip_cmd_2 = paste0('bgzip ', subset_vcf_singlesample)
-  index_cmd = paste0(tabix_bin, ' -p vcf ', subset_vcf_singlesample, '.gz')
+  bcftools_cmd = paste0(bcftools_bin, ' view -s ', vcf_samplename, ' ', subset_vcf_allsamples, ' > ', subset_vcf_singlesample, '_reformat.vcf')
+  bgzip_cmd_2 = paste0('bgzip ',  subset_vcf_singlesample, '_reformat.vcf')
+  index_cmd = paste0(tabix_bin, ' -p vcf ',  subset_vcf_singlesample, '_reformat.vcf.gz')
 
   verbose = T
 
@@ -170,7 +170,7 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
     system(bgzip_cmd_1)
   }
 
-  if (!file.exists(paste0(subset_vcf_singlesample, '.gz.tbi'))){
+  if (!file.exists(paste0(subset_vcf_singlesample, '_reformat.vcf.gz.tbi'))){
     if (verbose){
       print('SECOND BLOCK! I just checked, and the file does not exist yet.')
       print(paste0('The missing file is called: ', subset_vcf_singlesample, '.gz.tbi'))
@@ -178,8 +178,8 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
       #print(bgzip_cmd_2)
       print(index_cmd)
     }
-    #system(bcftools_cmd)
-    #system(bgzip_cmd_2)
+    system(bcftools_cmd)
+    system(bgzip_cmd_2)
     system(index_cmd)
   }
 
@@ -191,7 +191,7 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
     ' haplotag ',
     '-o ',  aln_bam, '_tagged.bam ',
     '--reference ', hg38_fa, ' ',
-    subset_vcf_singlesample,'.gz', 
+    subset_vcf_singlesample,'_reformat.vcf.gz', 
     ' --sample ', vcf_samplename, 
     ' --output-haplotag-list ', aln_bam, '_tags.tsv', 
     ' --ignore-read-groups ',
