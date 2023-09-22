@@ -179,9 +179,14 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
       print(index_cmd)
     }
     print('now runnign 1')
+    Sys.sleep(1)
     system(bcftools_cmd)
+    Sys.sleep(1)
+
     print('now 2')
     system(bgzip_cmd_2)
+    Sys.sleep(1)
+
     print('now 3')
     system(index_cmd)
   }
