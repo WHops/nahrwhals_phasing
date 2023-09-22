@@ -1,2 +1,5 @@
 sample_readme.md
 .Rproj.user
+config/region*
+config/sample*
+res
