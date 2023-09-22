@@ -161,7 +161,7 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   # I think here the problem is that the file may exist already, but is still being written to. Or the derivatives are not there yet.
   if (!file.exists(subset_vcf_allsamples)){
     if (verbose){
-      print('I just checked, and the file does not exist yet.')
+      print('FIRST BLOCK! I just checked, and the file does not exist yet.')
       print(paste0('The missing file is called: ', subset_vcf_allsamples))
       print(tabix_cmd)
       print(bgzip_cmd_1)
@@ -172,14 +172,14 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
 
   if (!file.exists(paste0(subset_vcf_singlesample, '.gz.tbi'))){
     if (verbose){
-      print('I just checked, and the file does not exist yet.')
+      print('SECOND BLOCK! I just checked, and the file does not exist yet.')
       print(paste0('The missing file is called: ', subset_vcf_singlesample, '.gz.tbi'))
-      print(bcftools_cmd)
-      print(bgzip_cmd_2)
+      #print(bcftools_cmd)
+      #print(bgzip_cmd_2)
       print(index_cmd)
     }
-    system(bcftools_cmd)
-    system(bgzip_cmd_2)
+    #system(bcftools_cmd)
+    #system(bgzip_cmd_2)
     system(index_cmd)
   }
 
