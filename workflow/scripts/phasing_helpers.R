@@ -124,7 +124,7 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
 
 
 determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa, 
-                                          vcf_dir, subset_vcf_allsamples, whatshap_binm tabix_bin){
+                                          vcf_dir, subset_vcf_allsamples, whatshap_bin, tabix_bin){
   
   
   # Some not so pleasant renamings. The age-old problem with GM vs NA names...
@@ -137,7 +137,6 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   }
 
   # Lets be brave
-  tabix_bin = 'tabix'
   bcftools_bin = 'bcftools'
 
   chr = strsplit(region, '-')[[1]][1]
@@ -155,7 +154,7 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
 
   bcftools_cmd = paste0(bcftools_bin, ' view -s ', vcf_samplename, ' ', subset_vcf_allsamples, ' > ', subset_vcf_singlesample)
   bgzip_cmd_2 = paste0('bgzip ', subset_vcf_singlesample)
-  index_cmd = paste0('tabix -p vcf ', subset_vcf_singlesample, '.gz')
+  index_cmd = paste0(tabix_bin, ' -p vcf ', subset_vcf_singlesample, '.gz')
 
   verbose = T
 
