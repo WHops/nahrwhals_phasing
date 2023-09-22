@@ -124,7 +124,7 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
 
 
 determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa, 
-                                          vcf_dir, subset_vcf_allsamples, whatshap_bin){
+                                          vcf_dir, subset_vcf_allsamples, whatshap_binm tabix_bin){
   
   
   # Some not so pleasant renamings. The age-old problem with GM vs NA names...
@@ -305,6 +305,7 @@ parser$add_argument("--samtools_bin")
 parser$add_argument("--whatshap_bin")
 parser$add_argument("--bedtools_bin")
 parser$add_argument("--subset_vcf_allsamples")
+parser$add_argument("--tabix_bin")
 
 
 
@@ -315,7 +316,7 @@ args <- parser$parse_args()
 if (args$function_name == "aln_chunks_to_minimap") {
   aln_chunks_to_minimap(args$res_path, args$region, args$sample, args$hap, args$hg38_mmi, args$mm2_bin, args$samtools_bin, args$bedtools_bin, args$chunklen)
 } else if (args$function_name == "determine_phase_with_whatshap") {
-  determine_phase_with_whatshap(args$aln_bam, args$region, args$sample, args$hap, args$hg38_fa, args$vcf_dir, args$subset_vcf_allsamples, args$whatshap_bin)
+  determine_phase_with_whatshap(args$aln_bam, args$region, args$sample, args$hap, args$hg38_fa, args$vcf_dir, args$subset_vcf_allsamples, args$whatshap_bin, args$tabix_bin)
 } else if (args$function_name == "collect_whatshap_res") {
   collect_whatshap_res(args$haptags, args$sample, args$region, args$hap, args$summarylist_link)
 } else if (args$function_name == "evaluate_summarylist") {

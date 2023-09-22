@@ -108,7 +108,8 @@ rule get_haptags:
     params:
         hg38_fa = config['hg38_fa'],
         vcf_dir = config['vcf_dir'],
-        whatshap_bin = config['whatshap_bin']
+        whatshap_bin = config['whatshap_bin'],
+        tabix_bin = config['tabix_bin']
 
 
     shell:
@@ -122,7 +123,8 @@ rule get_haptags:
               --hg38_fa {params.hg38_fa} \
               --vcf_dir {params.vcf_dir} \
               --subset_vcf_allsamples {input.vcf_allsamples} \
-              --whatshap_bin {params.whatshap_bin}
+              --whatshap_bin {params.whatshap_bin} \
+              --tabix_bin {params.tabix_bin}
         """
 
 rule get_bam:
