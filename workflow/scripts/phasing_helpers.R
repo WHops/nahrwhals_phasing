@@ -173,13 +173,16 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   if (!file.exists(paste0(subset_vcf_singlesample, '_reformat.vcf.gz.tbi'))){
     if (verbose){
       print('SECOND BLOCK! I just checked, and the file does not exist yet.')
-      print(paste0('The missing file is called: ', subset_vcf_singlesample, '.gz.tbi'))
-      #print(bcftools_cmd)
-      #print(bgzip_cmd_2)
+      print(paste0('The missing file is called: ', subset_vcf_singlesample, '_reformat.vcf.gz.tbi'))
+      print(bcftools_cmd)
+      print(bgzip_cmd_2)
       print(index_cmd)
     }
+    print('now runnign 1')
     system(bcftools_cmd)
+    print('now 2')
     system(bgzip_cmd_2)
+    print('now 3')
     system(index_cmd)
   }
 
