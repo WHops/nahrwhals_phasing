@@ -124,7 +124,7 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
 
 
 determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa, 
-                                          vcf_dir, subset_vcf_allsamples, whatshap_bin, tabix_bin){
+                                          vcf_dir, subset_vcf_allsamples, whatshap_bin, tabix_bin, bgzip_bin){
   
   
   # Some not so pleasant renamings. The age-old problem with GM vs NA names...
@@ -152,9 +152,9 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   # tabix_cmd = paste0(tabix_bin, ' ', phase_vcf_path, ' ', chr, ':', start, '-', end, ' -h > ', subset_vcf_allsamples)
   # bgzip_cmd_1 = paste0('bgzip ', subset_vcf_allsamples)
 
-  bcftools_cmd = paste0(bcftools_bin, ' view -s ', vcf_samplename, ' ', subset_vcf_allsamples, ' > ', subset_vcf_singlesample, '_reformat.vcf')
-  bgzip_cmd_2 = paste0('bgzip ',  subset_vcf_singlesample, '_reformat.vcf')
-  index_cmd = paste0(tabix_bin, ' -p vcf ',  subset_vcf_singlesample, '_reformat.vcf.gz')
+  bcftools_cmd = paste0(bcftools_bin, ' view -s ', vcf_samplename, ' ', subset_vcf_allsamples, ' > ', subset_vcf_singlesample)
+  bgzip_cmd_2 = paste0(bgzip_bin , ' ',  subset_vcf_singlesample)
+  index_cmd = paste0(tabix_bin, ' -p vcf ',  subset_vcf_singlesample, '.gz')
 
   verbose = T
 
@@ -313,6 +313,7 @@ parser$add_argument("--whatshap_bin")
 parser$add_argument("--bedtools_bin")
 parser$add_argument("--subset_vcf_allsamples")
 parser$add_argument("--tabix_bin")
+parser$add_argument("--bgzip_bin")
 
 
 
@@ -323,7 +324,7 @@ args <- parser$parse_args()
 if (args$function_name == "aln_chunks_to_minimap") {
   aln_chunks_to_minimap(args$res_path, args$region, args$sample, args$hap, args$hg38_mmi, args$mm2_bin, args$samtools_bin, args$bedtools_bin, args$chunklen)
 } else if (args$function_name == "determine_phase_with_whatshap") {
-  determine_phase_with_whatshap(args$aln_bam, args$region, args$sample, args$hap, args$hg38_fa, args$vcf_dir, args$subset_vcf_allsamples, args$whatshap_bin, args$tabix_bin)
+  determine_phase_with_whatshap(args$aln_bam, args$region, args$sample, args$hap, args$hg38_fa, args$vcf_dir, args$subset_vcf_allsamples, args$whatshap_bin, args$tabix_bin, args$bgzip_bin)
 } else if (args$function_name == "collect_whatshap_res") {
   collect_whatshap_res(args$haptags, args$sample, args$region, args$hap, args$summarylist_link)
 } else if (args$function_name == "evaluate_summarylist") {
