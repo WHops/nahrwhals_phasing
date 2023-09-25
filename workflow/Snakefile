@@ -162,6 +162,7 @@ rule get_fasta_and_shred:
         asm_chunked_fasta = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.fa"
     params:
         nw_res_path = config['nw_res_path']
+        chunklen = config['chunklen']
     shell:
         """
          Rscript workflow/scripts/phasing_helpers.R \
@@ -169,7 +170,7 @@ rule get_fasta_and_shred:
                 --sample {wildcards.sample} \
                 --hap {wildcards.hap} \
                 --region {wildcards.region} \
-                --chunklen {config['chunklen']} \
+                --chunklen {params.chunklen} \
                 --res_path {params.nw_res_path} \
                 --asm_chunked_fasta {output.asm_chunked_fasta}
         """
