@@ -7,7 +7,6 @@ process_actions <- function(actions_df) {
     sample <- actions_df$V2[i]
     h1_action <- actions_df$V4[i]
     h2_action <- actions_df$V4[i+1]
-    
     final_action <- ifelse(h1_action == h2_action, h1_action, 'unphase')
     action_list[[region]][[sample]] <- final_action
   }
@@ -27,18 +26,16 @@ process_vcf <- function(vcf_filename, action_list, output_filename) {
   stats <- list(keep=0, flip=0, unphase=0, missing_unphase=0)
   
   for(i in seq_along(fix_df$ID)) {
-    region_id <- with(fix_df, paste(CHROM[i], as.numeric(POS[i]), extract_end(INFO[i]), sep="-"))
+    region_id <- with(fix_df, paste(CHROM[i], gsub(" ", "", POS[i]), extract_end(INFO[i]), sep="-"))
     genotypes <- setdiff(colnames(vcf@gt), "FORMAT")
     missing_idx <- which(is.na(vcf@gt[i, genotypes]))
     vcf@gt[i, missing_idx] <- './.'
     
     for(sample in genotypes) {
       genotype <- vcf@gt[i, sample]
-      
       # Check if region and sample are in the action_list
       region_exists <- region_id %in% names(action_list)
       sample_exists <- region_exists && (sample %in% names(action_list[[region_id]]))
-      
       # Assign action based on existence checks
       if(region_exists && sample_exists) {
         action <- action_list[[region_id]][[sample]]
@@ -46,13 +43,14 @@ process_vcf <- function(vcf_filename, action_list, output_filename) {
         action <- "missing_unphase"
       }
       
-      
       # Pre-compute common elements
       parts <- strsplit(genotype, ":", fixed=TRUE)[[1]]
       gt <- parts[1]
       custom_phase_block <- ifelse(length(parts) > 1, paste0(":", parts[2]), "")
       
-      modified_gt = modify_genotype(gt, action, stats)$modified_gt 
+      modified_gt = modify_genotype(gt, action, stats)
+      stats[[action]] <- stats[[action]] + 1
+      print(stats)
       # Update the genotype with any modifications, keeping the custom phase block
       vcf@gt[i, sample] <- paste0(modified_gt, custom_phase_block)
       
@@ -78,8 +76,6 @@ process_vcf <- function(vcf_filename, action_list, output_filename) {
 # Example:
 #   modify_genotype(c("0|1", "1|0"), "flip", list("flipped" = 0))
 modify_genotype <- function(gt, action, stats) {
-  # Update stats according to action
-  stats[[action]] <- stats[[action]] + 1
   
   switch(action,
          flip = {
@@ -102,7 +98,7 @@ modify_genotype <- function(gt, action, stats) {
          modified_gt <- gt  # Default case, no changes to the genotype
   )
   
-  return(list(modified_gt = modified_gt, stats = stats))
+  return(modified_gt)
 }
 
 
@@ -117,10 +113,12 @@ parser$add_argument("--logout", help="Output log file")
 
 args <- parser$parse_args()
 
-actions_df <- read.table(args$actions, header=FALSE, stringsAsFactors=FALSE)
+actions_df <- read.table(args$actions, header=FALSE, stringsAsFactors=FALSE, sep='\t')
 actions <- process_actions(actions_df)
 stats <- process_vcf(args$vcf, actions, args$vcfout)
-write.table(stats, file=args$logout, row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t")
+print('hi')
+print(stats)
+writeLines(as.character(stats), args$logout)
 
 
 # if (interactive()) {
