@@ -166,7 +166,7 @@ rule get_fasta_and_shred:
     shell:
         """
          Rscript workflow/scripts/phasing_helpers.R \
-                --function_name get_fasta_and_shred \
+                --function get_fasta_and_shred \
                 --sample {wildcards.sample} \
                 --hap {wildcards.hap} \
                 --region {wildcards.region} \
