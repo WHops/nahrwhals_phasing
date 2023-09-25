@@ -72,7 +72,7 @@ shred_seq_bedtools <- function(infasta,
 
 #' @title: aln_chunks_to_minimap
 #' @export
-get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fasta){
+get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fasta, bedtools_bin){
     # Find the correct chunked reads fasta
   dir_path = paste0(res_path, region, '/fasta')
 
@@ -248,7 +248,7 @@ if (args$function_name == "collect_whatshap_res") {
 } else if (args$function_name == "subset_vcf_to_singlesample") {
   subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$bgzip_bin, args$bcftools_bin)
 } else if (args$function_name == "get_fasta_and_shred") {
-  get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$asm_chunked_fasta)
+  get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$asm_chunked_fasta, args$bedtools_bin)
   print("No function name given.")
 }
 
