@@ -161,7 +161,7 @@ rule get_fasta_and_shred:
     output:
         asm_chunked_fasta = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.fa"
     params:
-        nw_res_path = config['nw_res_path']
+        nw_res_path = config['nw_res_path'],
         chunklen = config['chunklen']
     shell:
         """
