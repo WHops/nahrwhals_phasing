@@ -180,7 +180,7 @@ rule align:
     output:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam"
     params:
-        minimap2_bin = config['minimap2_bin'],
+        minimap2_bin = config['mm2_bin'],
         hg38_mmi = config['hg38_mmi']
     shell:
         """
