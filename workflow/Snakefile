@@ -140,7 +140,8 @@ rule get_haptags:
         else
             vcf_samplename="{wildcards.sample}"
         fi
-
+        echo $vcf_samplename
+        
         {params.whatshap_bin} haplotag \
             -o {input.bam}_tagged.bam \
             --reference {params.hg38_fa} \
