@@ -105,6 +105,7 @@ rule subset_vcf_region_to_sample:
     output:
         vcf = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf',
         vcf.gz = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz'
+        vcf.gz.tbi = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz.tbi'
     params:
         sample = wildcards.sample,
         tabix_bin = config['tabix_bin'],
@@ -127,22 +128,24 @@ rule subset_vcf_region_to_sample:
 rule get_haptags:
     input:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam",
-        vcf_singlesample = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz'
+        vcf_singlesample = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz',
+        vcf_singlesample_idx = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz.tbi',
+
     output:
         haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam_tags.tsv"
     params:
         hg38_fa = config['hg38_fa'],
-        whatshap_bin = config['whatshap_bin'],
+        whatshap_bin = config['whatshap_bin']
     shell:
         """
         {params.whatshap_bin} haplotag \
-        -o {input.bam}_tagged.bam \
-        --reference {params.hg38_fa} \
-        {input.vcf_singlesample} \
-        --sample {wildcards.sample} \
-        --output-haplotag-list {output.haptags} \
-        --ignore-read-groups \
-        {input.bam}
+            -o {input.bam}_tagged.bam \
+            --reference {params.hg38_fa} \
+            {input.vcf_singlesample} \
+            --sample {wildcards.sample} \
+            --output-haplotag-list {output.haptags} \
+            --ignore-read-groups \
+            {input.bam}
         """
 
 rule get_bam:
