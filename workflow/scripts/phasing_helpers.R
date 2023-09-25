@@ -70,6 +70,8 @@ shred_seq_bedtools <- function(infasta,
   print(paste0("Wrote ", outfasta_chunk, " with chunklen ", chunklen, " bp."))
 }
 
+
+
 #' @title: aln_chunks_to_minimap
 #' @export
 get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fasta, bedtools_bin){
@@ -82,10 +84,10 @@ get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fas
   
   # And then we grep those out of the whole list. 
   asm_fasta <- grep(regex, list.files(path = dir_path, full.names = TRUE), value = TRUE)
-  asm_chunked_fasta = paste0(asm_fasta, '_chunked_phasing.fa')
+  #asm_chunked_fasta = paste0(asm_fasta, '_chunked_phasing.fa')
 
   # Use shred_seq_bedtools to turn this into chunks.
-  shred_seq_bedtools(asm_fasta, asm_chunked_fasta, chunklen, bedtools_bin)
+  shred_seq_bedtools(asm_fasta, out_fasta, chunklen, bedtools_bin)
 }
 
 
@@ -249,6 +251,7 @@ if (args$function_name == "collect_whatshap_res") {
   subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$bgzip_bin, args$bcftools_bin)
 } else if (args$function_name == "get_fasta_and_shred") {
   get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$asm_chunked_fasta, args$bedtools_bin)
+} else {
   print("No function name given.")
 }
 
