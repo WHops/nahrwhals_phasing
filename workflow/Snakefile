@@ -133,11 +133,19 @@ rule get_haptags:
         whatshap_bin = config['whatshap_bin']
     shell:
         """
+        if [ "{wildcards.sample}" == "HG002" ]; then
+            vcf_samplename="NA24385"
+        elif [[ "{wildcards.sample}" == GM* ]]; then
+            vcf_samplename=${{"{wildcards.sample}"//GM/NA}}
+        else
+            vcf_samplename="{wildcards.sample}"
+        fi
+
         {params.whatshap_bin} haplotag \
             -o {input.bam}_tagged.bam \
             --reference {params.hg38_fa} \
             {input.vcf_singlesample} \
-            --sample {wildcards.sample} \
+            --sample $vcf_samplename \
             --output-haplotag-list {output.haptags} \
             --ignore-read-groups \
             {input.bam}
