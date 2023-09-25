@@ -70,27 +70,10 @@ shred_seq_bedtools <- function(infasta,
   print(paste0("Wrote ", outfasta_chunk, " with chunklen ", chunklen, " bp."))
 }
 
-
-
-
-
-
-#' @title aln_chunks_to_minimap
-#' @description Aligns chunks of the assembly to the reference genome using minimap2
-#' @param res_path Path to the results folder
-#' @param region Region to be aligned
-#' @param sample Sample to be aligned
-#' @param hap Haplotype to be aligned
-#' @param hg38_mmi Path to the minimap2 index of the reference genome
-#' @param minimap2_bin Path to the minimap2 binary
-#' @param samtools_bin Path to the samtools binary
-#' @return Path to the bam file
+#' @title: aln_chunks_to_minimap
 #' @export
-#' @author Wolfram Hoeps
-aln_chunks_to_minimap <- function(res_path, region, sample, hap,
-                                  hg38_mmi, minimap2_bin, samtools_bin,
-                                  bedtools_bin, chunklen = 10000) {
-  # Find the correct chunked reads fasta
+get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fasta){
+    # Find the correct chunked reads fasta
   dir_path = paste0(res_path, region, '/fasta')
 
 
@@ -103,24 +86,9 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
 
   # Use shred_seq_bedtools to turn this into chunks.
   shred_seq_bedtools(asm_fasta, asm_chunked_fasta, chunklen, bedtools_bin)
-
-  outfile_sam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region ,'_', chunklen, '.sam')
-  outfile_bam_unsrt = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_', chunklen,'_unsrt.bam')
-  outfile_bam = paste0('/scratch/hoeps/bamsam/', sample, '_h', hap, '_', region, '_', chunklen, '.bam')
-
-  minimap2_cmd = paste0(minimap2_bin, " -a ", hg38_mmi, " ", 
-                        asm_chunked_fasta, " > ",  outfile_sam)
-  
-  system(minimap2_cmd)
-  
-  system(paste0(samtools_bin, ' view -h -b ', outfile_sam, ' > ', outfile_bam_unsrt ))
-  system(paste0(samtools_bin, ' sort ', outfile_bam_unsrt , ' > ', outfile_bam))
-
-  system(paste0(samtools_bin, ' index ', outfile_bam ))
-
-  Sys.sleep(1)
-  return(outfile_bam)
 }
+
+
 
 #' @title determine_phase_with_whatshap
 #' @export
@@ -263,7 +231,8 @@ parser$add_argument("--bgzip_bin")
 parser$add_argument("--bcftools_bin")
 parser$add_argument("--subset_vcf_singlesample_vcf")
 parser$add_argument("--subset_vcf_singlesample_vcf_gz")
-
+parser$add_argument("--subset_vcf_singlesample_vcf_tbi")
+parser$add_argument("--subset_vcf_singlesample_vcf_gz_tbi")
 
 
 
@@ -271,15 +240,14 @@ parser$add_argument("--subset_vcf_singlesample_vcf_gz")
 args <- parser$parse_args()
 
 
-if (args$function_name == "aln_chunks_to_minimap") {
-  aln_chunks_to_minimap(args$res_path, args$region, args$sample, args$hap, args$hg38_mmi, args$mm2_bin, args$samtools_bin, args$bedtools_bin, args$chunklen)
-} else if (args$function_name == "collect_whatshap_res") {
+if (args$function_name == "collect_whatshap_res") {
   collect_whatshap_res(args$haptags, args$sample, args$region, args$hap, args$summarylist_link)
 } else if (args$function_name == "evaluate_summarylist") {
   evaluate_summarylist(args$summarylist, args$actionlist)
 } else if (args$function_name == "subset_vcf_to_singlesample") {
   subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$bgzip_bin, args$bcftools_bin)
-} else {
+} else if (args$function_name == "get_fasta_and_shred") {
+  get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$subset_vcf_singlesample_vcf)
   print("No function name given.")
 }
 

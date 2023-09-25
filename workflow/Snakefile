@@ -124,6 +124,7 @@ rule subset_vcf_region_to_sample:
 rule get_haptags:
     input:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam",
+        bam_bai = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam.bai"
         vcf_singlesample = '/scratch/hoeps/nygc_subsets/singlesample_{region}_{sample}.vcf.gz',
         vcf_singlesample_idx = '/scratch/hoeps/nygc_subsets/singlesample_{region}_{sample}.vcf.gz.tbi'
     output:
@@ -155,31 +156,79 @@ rule get_haptags:
             {input.bam}
         """
 
-rule get_bam:
+rule get_fasta_and_shred:
     input:
+    output:
+        asm_chunked_fasta = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.fa"
+    params:
+        nw_res_path = config['nw_res_path']
+    shell:
+        """
+         Rscript workflow/scripts/phasing_helpers.R \
+                --function_name get_fasta_and_shred \
+                --sample {wildcards.sample} \
+                --hap {wildcards.hap} \
+                --region {wildcards.region} \
+                --chunklen {config['chunklen']} \
+                --res_path {params.nw_res_path} \
+                --asm_chunked_fasta {output.asm_chunked_fasta}
+        """
+
+rule align:
+    input:
+        asm_chunked_fasta = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.fa"
     output:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam"
     params:
-        nw_res_path = config['nw_res_path'],
-        hg38_mmi = config['hg38_mmi'],
-        mm2_bin = config['mm2_bin'],
-        samtools_bin = config['samtools_bin'],
-        bedtools_bin = config['bedtools_bin'],
-        chunklen = config['chunklen']
+        minimap2_bin = config['minimap2_bin'],
+        hg38_mmi = config['hg38_mmi']
     shell:
         """
-        Rscript workflow/scripts/phasing_helpers.R \
-              --function_name aln_chunks_to_minimap \
-              --res_path {params.nw_res_path} \
-              --region {wildcards.region} \
-              --sample {wildcards.sample} \
-              --hap {wildcards.hap} \
-              --hg38_mmi {params.hg38_mmi} \
-              --mm2_bin {params.mm2_bin} \
-              --samtools_bin {params.samtools_bin} \
-              --bedtools_bin {params.bedtools_bin} \
-              --chunklen {params.chunklen}
+        {params.minimap2_bin} \
+            -a {params.hg38_mmi} \
+            {input.asm_chunked_fasta} | samtools sort -o {output.bam} -
         """
+
+rule sam_to_bam:
+    input:
+        {foo.sam}
+    output:
+        {foo.bam}
+    params:
+        samtools_bin = config['samtools_bin'],
+    shell:
+        """
+        {params.samtools_bin} view -bS {input} > {output}
+        """
+
+# rule align:
+#     input:
+#     output:
+#     shell:
+#         sam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.sam"
+#         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam"
+#         bam_bai = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam.bai"
+#     params:
+#         nw_res_path = config['nw_res_path'],
+#         hg38_mmi = config['hg38_mmi'],
+#         mm2_bin = config['mm2_bin'],
+#         samtools_bin = config['samtools_bin'],
+#         bedtools_bin = config['bedtools_bin'],
+#         chunklen = config['chunklen']
+#     shell:
+#         """
+#         Rscript workflow/scripts/phasing_helpers.R \
+#               --function_name aln_chunks_to_minimap \
+#               --res_path {params.nw_res_path} \
+#               --region {wildcards.region} \
+#               --sample {wildcards.sample} \
+#               --hap {wildcards.hap} \
+#               --hg38_mmi {params.hg38_mmi} \
+#               --mm2_bin {params.mm2_bin} \
+#               --samtools_bin {params.samtools_bin} \
+#               --bedtools_bin {params.bedtools_bin} \
+#               --chunklen {params.chunklen}
+#         """
 
 
 # General rules that should be fine regardless of context
@@ -189,9 +238,11 @@ rule index_bam:
         '{foo}.bam'
     output:
         '{foo}.bam.bai'
+    params:
+        samtools_bin = config['samtools_bin'],
     shell:
         """
-        samtools index {input}
+        {params.samtools_bin} index {input}
         """
    
 rule index_vcf:
@@ -199,9 +250,11 @@ rule index_vcf:
         '{foo}.vcf.gz'
     output:
         '{foo}.vcf.gz.tbi'
+    params:
+        tabix_bin = config['tabix_bin'],
     shell:
         """
-        tabix -p vcf {input}
+        {params.tabix_bin} -p vcf {input}
         """
 
 
