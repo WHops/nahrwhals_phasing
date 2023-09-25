@@ -181,16 +181,6 @@ rule index_bam:
         """
         samtools index {input}
         """
-
-rule compress_vcf:
-    input:
-        '{foo}.vcf'
-    output:
-        '{foo}.vcf.gz',
-    shell:
-        """
-        bgzip -c {input} > {output}
-        """
    
 rule index_vcf:
     input:
@@ -201,3 +191,14 @@ rule index_vcf:
         """
         tabix -p vcf {input}
         """
+
+
+#rule compress_vcf:
+#     input:
+#         '{foo}.vcf'
+#     output:
+#         '{foo}.vcf.gz',
+#     shell:
+#         """
+#         bgzip -c {input} > {output}
+#         """
