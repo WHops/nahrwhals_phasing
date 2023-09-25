@@ -124,7 +124,7 @@ rule subset_vcf_region_to_sample:
 rule get_haptags:
     input:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam",
-        bam_bai = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam.bai"
+        bam_bai = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam.bai",
         vcf_singlesample = '/scratch/hoeps/nygc_subsets/singlesample_{region}_{sample}.vcf.gz',
         vcf_singlesample_idx = '/scratch/hoeps/nygc_subsets/singlesample_{region}_{sample}.vcf.gz.tbi'
     output:
