@@ -101,10 +101,10 @@ rule get_summarylist:
 
 rule subset_vcf_region_to_sample:
     input:
-        vcf = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz',
+        vcf_gz_in = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz',
     output:
-        vcf = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf',
-        vcf_gz = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz',
+        vcf = '/scratch/hoeps/nygc_subsets/{region}_singlesample_{sample}.vcf',
+        vcf_gz = '/scratch/hoeps/nygc_subsets/{region}_singlesample_{sample}.vcf.gz',
     params:
         bgzip_bin = config['bgzip_bin'],
         bcftools_bin = config['bcftools_bin']
@@ -112,7 +112,7 @@ rule subset_vcf_region_to_sample:
         """
         Rscript workflow/scripts/phasing_helpers2.R \
             --function subset_vcf_to_singlesample \
-            --subset_vcf_allsamples {input.vcf} \
+            --subset_vcf_allsamples {input.vcf_gz_in} \
             --sample {wildcards.sample} \
             --subset_vcf_singlesample_vcf {output.vcf} \
             --subset_vcf_singlesample_vcf_gz {output.vcf_gz} \
@@ -124,9 +124,8 @@ rule subset_vcf_region_to_sample:
 rule get_haptags:
     input:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam",
-        vcf_singlesample = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz',
-        vcf_singlesample_idx = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz.tbi',
-
+        vcf_singlesample = '/scratch/hoeps/nygc_subsets/{region}_singlesample_{sample}.vcf.gz',
+        vcf_singlesample_idx = '/scratch/hoeps/nygc_subsets/{region}_singlesample_{sample}.vcf.gz.tbi'
     output:
         haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam_tags.tsv"
     params:
