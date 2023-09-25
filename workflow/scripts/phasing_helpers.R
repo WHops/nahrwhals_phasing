@@ -118,7 +118,7 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
 
   system(paste0(samtools_bin, ' index ', outfile_bam ))
 
-  
+  Sys.sleep(1)
   return(outfile_bam)
 }
 
@@ -145,7 +145,7 @@ subset_vcf_to_singlesample <- function(input_vcf_allsamples, sample,
 
   system(bcftools_cmd)
   system(bgzip_cmd_2)
-  
+  Sys.sleep(1)
 }
 
 
@@ -156,6 +156,7 @@ collect_whatshap_res <- function(haptags, sample, region, hap, summarylist_link)
      print(awk_cmd)
      system(awk_cmd)
      print('done')
+     Sys.sleep(1)
   
 }
 
