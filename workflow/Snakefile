@@ -110,7 +110,7 @@ rule subset_vcf_region_to_sample:
         bcftools_bin = config['bcftools_bin']
     shell:
         """
-        Rscript workflow/scripts/phasing_helpers2.R \
+        Rscript workflow/scripts/phasing_helpers.R \
             --function subset_vcf_to_singlesample \
             --subset_vcf_allsamples {input.vcf_gz_in} \
             --sample {wildcards.sample} \
