@@ -126,7 +126,7 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
 #' @export
 subset_vcf_to_singlesample <- function(input_vcf_allsamples, sample, 
                                        output_vcf_singlesample_vcf, output_vcf_singlesample_vcf_gz, 
-                                       tabix_bin, bgzip_bin, bcftools_bin){
+                                       bgzip_bin, bcftools_bin){
 
   
   # Some not so pleasant renamings. The age-old problem with GM vs NA names...
@@ -142,11 +142,9 @@ subset_vcf_to_singlesample <- function(input_vcf_allsamples, sample,
 
   # bgzip system command that compresses output_vcf_singlesample_vcf and writes the file to output_vcf_singlesample_vcf_gz
   bgzip_cmd_2 = paste0(bgzip_bin , ' -c ',  output_vcf_singlesample_vcf, ' > ', output_vcf_singlesample_vcf_gz)
-  index_cmd = paste0(tabix_bin, ' -p vcf ',  output_vcf_singlesample_vcf_gz)
 
   system(bcftools_cmd)
   system(bgzip_cmd_2)
-  system(index_cmd)
   
 }
 
@@ -279,7 +277,7 @@ if (args$function_name == "aln_chunks_to_minimap") {
 } else if (args$function_name == "evaluate_summarylist") {
   evaluate_summarylist(args$summarylist, args$actionlist)
 } else if (args$function_name == "subset_vcf_to_singlesample") {
-  subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$tabix_bin, args$bgzip_bin, args$bcftools_bin)
+  subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$bgzip_bin, args$bcftools_bin)
 } else {
   print("No function name given.")
 }
