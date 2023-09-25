@@ -5,7 +5,8 @@
     "mm2_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/minimap2",
     "whatshap_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/whatshap",
     "bedtools_bin"      : "/g/korbel/hoeps/anaconda_2022/miniconda3/envs/whatshap-env/bin/bedtools",
-
+    "tabix_bin"         : "/g/korbel/hoeps/anaconda_2022/miniconda3/bin/tabix",
+    "bgzip_bin"         : "/g/korbel/hoeps/anaconda_2022/miniconda3/bin/bgzip",
     "hg38_fa" :  "/g/korbel/hoeps/projects/huminvs/data/hg38/ref_chr_1_22XY.fa",
     "hg38_mmi" : "/g/korbel/hoeps/projects/huminvs/data/hg38/ref_chr_1_22XY.mmi",
     "vcf_dir" :  "/g/korbel/hoeps/projects/nahr/wgs_lab/nygc",
@@ -14,7 +15,7 @@
 
     "region_file" : "config/regions.txt",
     "sample_file" : "config/samples.txt",
-    "chunklen" :  "10000"
+    "chunklen" :  "50000"
 
 }
 

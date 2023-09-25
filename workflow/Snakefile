@@ -138,11 +138,20 @@ rule get_haptags:
         if [ "$sample_name" == "HG002" ]; then
             vcf_samplename="NA24385"
         elif [[ "$sample_name" == GM* ]]; then
+<<<<<<< Updated upstream
             vcf_samplename=${{sample_name//GM/NA}}  # double curly braces for Snakemake to escape them
+=======
+            vcf_samplename=${sample_name//GM/NA}
+>>>>>>> Stashed changes
         else
             vcf_samplename="$sample_name"
         fi
 
+<<<<<<< Updated upstream
+=======
+        echo $vcf_samplename
+        
+>>>>>>> Stashed changes
         {params.whatshap_bin} haplotag \
             -o {input.bam}_tagged.bam \
             --reference {params.hg38_fa} \
