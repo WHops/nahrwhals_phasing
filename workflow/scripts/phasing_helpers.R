@@ -233,6 +233,7 @@ parser$add_argument("--subset_vcf_singlesample_vcf")
 parser$add_argument("--subset_vcf_singlesample_vcf_gz")
 parser$add_argument("--subset_vcf_singlesample_vcf_tbi")
 parser$add_argument("--subset_vcf_singlesample_vcf_gz_tbi")
+parser$add_argument("--asm_chunked_fasta")
 
 
 
@@ -247,7 +248,7 @@ if (args$function_name == "collect_whatshap_res") {
 } else if (args$function_name == "subset_vcf_to_singlesample") {
   subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$bgzip_bin, args$bcftools_bin)
 } else if (args$function_name == "get_fasta_and_shred") {
-  get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$subset_vcf_singlesample_vcf)
+  get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$asm_chunked_fasta)
   print("No function name given.")
 }
 
