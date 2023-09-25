@@ -191,9 +191,9 @@ rule align:
 
 rule sam_to_bam:
     input:
-        {foo.sam}
+        "{foo.sam}"
     output:
-        {foo.bam}
+        "{foo.bam}"
     params:
         samtools_bin = config['samtools_bin'],
     shell:
