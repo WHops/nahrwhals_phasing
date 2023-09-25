@@ -99,34 +99,50 @@ rule get_summarylist:
               --summarylist_link {output}
         """
 
+rule subset_vcf_region_to_sample:
+    input:
+        vcf = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz',
+    output:
+        vcf = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf',
+        vcf.gz = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz'
+    params:
+        sample = wildcards.sample,
+        tabix_bin = config['tabix_bin'],
+        bgzip_bin = config['bgzip_bin'],
+        bcftools_bin = config['bcftools_bin']
+    shell:
+        """
+        Rscript workflow/scripts/phasing_helpers.R \
+            --function subset_vcf_to_singlesample \
+            --subset_vcf_allsamples {input.vcf} \
+            --sample {params.sample} \
+            --subset_vcf_singlesample_vcf {output.vcf} \
+            --subset_vcf_singlesample_vcf_gz {output.vcf.gz} \
+            --tabix_bin {params.tabix_bin} \
+            --bgzip_bin {params.bgzip_bin} \
+            --bcftools_bin {params.bcftools_bin}
+        """
+
+
 rule get_haptags:
     input:
         bam = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam",
-        vcf_allsamples = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz'
+        vcf_singlesample = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz'
     output:
         haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam_tags.tsv"
     params:
         hg38_fa = config['hg38_fa'],
-        vcf_dir = config['vcf_dir'],
         whatshap_bin = config['whatshap_bin'],
-        tabix_bin = config['tabix_bin'],
-        bgzip_bin = config['bgzip_bin']
-
-
     shell:
         """
-        Rscript workflow/scripts/phasing_helpers.R \
-              --function_name determine_phase_with_whatshap \
-              --aln_bam {input.bam} \
-              --region {wildcards.region} \
-              --sample {wildcards.sample} \
-              --hap {wildcards.hap} \
-              --hg38_fa {params.hg38_fa} \
-              --vcf_dir {params.vcf_dir} \
-              --subset_vcf_allsamples {input.vcf_allsamples} \
-              --whatshap_bin {params.whatshap_bin} \
-              --tabix_bin {params.tabix_bin} \
-              --bgzip_bin {params.bgzip_bin}
+        {params.whatshap_bin} haplotag \
+        -o {input.bam}_tagged.bam \
+        --reference {params.hg38_fa} \
+        {input.vcf_singlesample} \
+        --sample {wildcards.sample} \
+        --output-haplotag-list {output.haptags} \
+        --ignore-read-groups \
+        {input.bam}
         """
 
 rule get_bam:

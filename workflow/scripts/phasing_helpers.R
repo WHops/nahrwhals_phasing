@@ -122,11 +122,12 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
   return(outfile_bam)
 }
 
-# @title: determine_phase_with_whatshap
-# @export 
-determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa, 
-                                          vcf_dir, subset_vcf_allsamples, whatshap_bin, tabix_bin, bgzip_bin){
-  
+#' @title determine_phase_with_whatshap
+#' @export
+subset_vcf_to_singlesample <- function(input_vcf_allsamples, sample, 
+                                       output_vcf_singlesample_vcf, output_vcf_singlesample_vcf_gz, 
+                                       tabix_bin, bgzip_bin, bcftools_bin){
+
   
   # Some not so pleasant renamings. The age-old problem with GM vs NA names...
 
@@ -136,81 +137,19 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   } else if(startsWith(sample, "GM")){
     vcf_samplename <- sub("^GM", "NA", sample)
   }
-
-  # Lets be brave
-  bcftools_bin = 'bcftools'
-
-  chr = strsplit(region, '-')[[1]][1]
-  start = strsplit(region, '-')[[1]][2]
-  end = strsplit(region, '-')[[1]][3]
-  phased_vcf_regex <- paste0("^.*", chr,"\\..*\\.vcf\\.gz$")
-  phase_vcf_path = grep(phased_vcf_regex, list.files(path = vcf_dir, full.names = TRUE), value = TRUE)
   
-  # Prepare vcf
-  # subset_vcf_allsamples = paste0('/scratch/hoeps/nygc_subsets/', region, '_allsamples.vcf')
-  subset_vcf_singlesample = paste0('/scratch/hoeps/nygc_subsets/', region, '_', sample, '_', hap, '.vcf')
+  bcftools_cmd = paste0(bcftools_bin, ' view -s ', vcf_samplename, ' ', input_vcf_allsamples, ' > ', output_vcf_singlesample_vcf)
 
-  # tabix_cmd = paste0(tabix_bin, ' ', phase_vcf_path, ' ', chr, ':', start, '-', end, ' -h > ', subset_vcf_allsamples)
-  # bgzip_cmd_1 = paste0('bgzip ', subset_vcf_allsamples)
+  # bgzip system command that compresses output_vcf_singlesample_vcf and writes the file to output_vcf_singlesample_vcf_gz
+  bgzip_cmd_2 = paste0(bgzip_bin , ' -c ',  output_vcf_singlesample_vcf, ' > ', output_vcf_singlesample_vcf_gz)
+  index_cmd = paste0(tabix_bin, ' -p vcf ',  output_vcf_singlesample_vcf_gz)
 
-  bcftools_cmd = paste0(bcftools_bin, ' view -s ', vcf_samplename, ' ', subset_vcf_allsamples, ' > ', subset_vcf_singlesample)
-  bgzip_cmd_2 = paste0(bgzip_bin , ' ',  subset_vcf_singlesample)
-  index_cmd = paste0(tabix_bin, ' -p vcf ',  subset_vcf_singlesample, '.gz')
-
-  verbose = T
-
-  # I think here the problem is that the file may exist already, but is still being written to. Or the derivatives are not there yet.
-  if (!file.exists(subset_vcf_allsamples)){
-    if (verbose){
-      print('FIRST BLOCK! I just checked, and the file does not exist yet.')
-      print(paste0('The missing file is called: ', subset_vcf_allsamples))
-      print(tabix_cmd)
-      print(bgzip_cmd_1)
-    }
-    system(tabix_cmd)
-    system(bgzip_cmd_1)
-  }
-
-  if (!file.exists(paste0(subset_vcf_singlesample, '.gz.tbi'))){
-    if (verbose){
-      print('SECOND BLOCK! I just checked, and the file does not exist yet.')
-      print(paste0('The missing file is called: ', subset_vcf_singlesample, '.gz.tbi'))
-      print(bcftools_cmd)
-      print(bgzip_cmd_2)
-      print(index_cmd)
-    }
-    print('now runnign 1')
-    Sys.sleep(1)
-    system(bcftools_cmd)
-    Sys.sleep(1)
-
-    print('now 2')
-    system(bgzip_cmd_2)
-    Sys.sleep(1)
-
-    print('now 3')
-    system(index_cmd)
-  }
-
-  # Wait for 3 second
-  Sys.sleep(3)
-
-  whatshap_cmd = paste0(
-    whatshap_bin, 
-    ' haplotag ',
-    '-o ',  aln_bam, '_tagged.bam ',
-    '--reference ', hg38_fa, ' ',
-    subset_vcf_singlesample,'.gz', 
-    ' --sample ', vcf_samplename, 
-    ' --output-haplotag-list ', aln_bam, '_tags.tsv', 
-    ' --ignore-read-groups ',
-    aln_bam
-  )
-  
-  print(whatshap_cmd)
-  system(whatshap_cmd)
+  system(bcftools_cmd)
+  system(bgzip_cmd_2)
+  system(index_cmd)
   
 }
+
 
 # @title: collect_whatshap_res
 # @export
@@ -322,6 +261,10 @@ parser$add_argument("--bedtools_bin")
 parser$add_argument("--subset_vcf_allsamples")
 parser$add_argument("--tabix_bin")
 parser$add_argument("--bgzip_bin")
+parser$add_argument("--bcftools_bin")
+parser$add_argument("--subset_vcf_singlesample_vcf")
+parser$add_argument("--subset_vcf_singlesample_vcf_gz")
+
 
 
 
@@ -331,10 +274,13 @@ args <- parser$parse_args()
 
 if (args$function_name == "aln_chunks_to_minimap") {
   aln_chunks_to_minimap(args$res_path, args$region, args$sample, args$hap, args$hg38_mmi, args$mm2_bin, args$samtools_bin, args$bedtools_bin, args$chunklen)
-} else if (args$function_name == "determine_phase_with_whatshap") {
-  determine_phase_with_whatshap(args$aln_bam, args$region, args$sample, args$hap, args$hg38_fa, args$vcf_dir, args$subset_vcf_allsamples, args$whatshap_bin, args$tabix_bin, args$bgzip_bin)
 } else if (args$function_name == "collect_whatshap_res") {
   collect_whatshap_res(args$haptags, args$sample, args$region, args$hap, args$summarylist_link)
 } else if (args$function_name == "evaluate_summarylist") {
   evaluate_summarylist(args$summarylist, args$actionlist)
+} else if (args$function_name == "subset_vcf_to_singlesample") {
+  subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$tabix_bin, args$bgzip_bin, args$bcftools_bin)
+} else {
+  print("No function name given.")
 }
+
