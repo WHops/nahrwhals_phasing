@@ -104,9 +104,8 @@ rule subset_vcf_region_to_sample:
         vcf = '/scratch/hoeps/nygc_subsets/{region}_allsamples.vcf.gz',
     output:
         vcf = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf',
-        vcf.gz = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz',
+        vcf_gz = '/scratch/hoeps/nygc_subsets/{region}_{sample}.vcf.gz',
     params:
-        sample = wildcards.sample,
         bgzip_bin = config['bgzip_bin'],
         bcftools_bin = config['bcftools_bin']
     shell:
@@ -114,9 +113,9 @@ rule subset_vcf_region_to_sample:
         Rscript workflow/scripts/phasing_helpers2.R \
             --function subset_vcf_to_singlesample \
             --subset_vcf_allsamples {input.vcf} \
-            --sample {params.sample} \
+            --sample {wildcards.sample} \
             --subset_vcf_singlesample_vcf {output.vcf} \
-            --subset_vcf_singlesample_vcf_gz {output.vcf.gz} \
+            --subset_vcf_singlesample_vcf_gz {output.vcf_gz} \
             --bgzip_bin {params.bgzip_bin} \
             --bcftools_bin {params.bcftools_bin}
         """
