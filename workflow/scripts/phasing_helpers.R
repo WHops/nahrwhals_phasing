@@ -122,7 +122,8 @@ aln_chunks_to_minimap <- function(res_path, region, sample, hap,
   return(outfile_bam)
 }
 
-
+# @title: determine_phase_with_whatshap
+# @export 
 determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa, 
                                           vcf_dir, subset_vcf_allsamples, whatshap_bin, tabix_bin, bgzip_bin){
   
@@ -211,6 +212,8 @@ determine_phase_with_whatshap <- function(aln_bam, region, sample, hap, hg38_fa,
   
 }
 
+# @title: collect_whatshap_res
+# @export
 collect_whatshap_res <- function(haptags, sample, region, hap, summarylist_link){
      awk_cmd = paste0('tail -n +2 ', haptags, ' | awk \'BEGIN {FS=OFS="\t"} {print "', sample, '\t', hap, '\t', region, '",$1,$2}\' > ', summarylist_link)
      print(awk_cmd)
@@ -219,6 +222,8 @@ collect_whatshap_res <- function(haptags, sample, region, hap, summarylist_link)
   
 }
 
+# @title: evaluate_åsummarylist
+# @export
 evaluate_summarylist <- function(summarylist, actionlist){
 
   summ = read.table(summarylist, sep='\t')
@@ -249,6 +254,9 @@ evaluate_summarylist <- function(summarylist, actionlist){
 
 
   h1_to_h2_fract =  xx$H1 / (xx$H1 + xx$H2)
+  if (is.na(h1_to_h2_fract)){
+    h1_to_h2_fract = 0.5
+  }
   none_fract = xx$none / (xx$H1 + xx$H2 + xx$none)
 
   # Determine mapped haplotype
@@ -260,7 +268,7 @@ evaluate_summarylist <- function(summarylist, actionlist){
     mapped_hap = 'unclear'
   }
 
-  # Determine action 
+  # Determine action.
   if (asm_hap == mapped_hap){
     action = 'keep'
   } else if ((asm_hap == 1) & (mapped_hap == 2) | (asm_hap == 2) & (mapped_hap == 1)){
