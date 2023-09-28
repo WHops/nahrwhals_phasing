@@ -41,7 +41,6 @@ shred_seq_bedtools <- function(infasta,
   # Write a temporary bedfile that will be removed at the end of the function
   bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
   fasta_awk_tmp_file <- paste0("tmpinfo_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
-
   get_fasta_info(infasta, fasta_awk_tmp_file)
   # Collect information about the fasta we want to chop. This info is needed for bedtools getfasta
   # To work well.
@@ -74,7 +73,7 @@ shred_seq_bedtools <- function(infasta,
 
 #' @title: aln_chunks_to_minimap
 #' @export
-get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fasta, bedtools_bin){
+get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fa, bedtools_bin){
     # Find the correct chunked reads fasta
   dir_path = paste0(res_path, region, '/fasta')
 
@@ -85,10 +84,12 @@ get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fas
   # And then we grep those out of the whole list. 
   asm_fasta <- grep(regex, list.files(path = dir_path, full.names = TRUE), value = TRUE)
   #asm_chunked_fasta = paste0(asm_fasta, '_chunked_phasing.fa')
-  print(nonsense)
-  browser()
-  # Use shred_seq_bedtools to turn this into chunks.
-  shred_seq_bedtools(asm_fasta, out_fasta, chunklen, bedtools_bin)
+  if (length(asm_fasta) > 0){ 
+    # Use shred_seq_bedtools to turn this into chunks.
+    shred_seq_bedtools(asm_fasta, out_fa, chunklen, bedtools_bin)
+  } else {
+    system(paste0('touch ', out_fa))
+  }
 }
 
 
@@ -236,14 +237,14 @@ parser$add_argument("--subset_vcf_singlesample_vcf")
 parser$add_argument("--subset_vcf_singlesample_vcf_gz")
 parser$add_argument("--subset_vcf_singlesample_vcf_tbi")
 parser$add_argument("--subset_vcf_singlesample_vcf_gz_tbi")
-parser$add_argument("--asm_chunked_fasta")
+parser$add_argument("--out_fa")
 
 
 
 
 args <- parser$parse_args()
 
-
+print('eeh')
 if (args$function_name == "collect_whatshap_res") {
   collect_whatshap_res(args$haptags, args$sample, args$region, args$hap, args$summarylist_link)
 } else if (args$function_name == "evaluate_summarylist") {
@@ -251,7 +252,7 @@ if (args$function_name == "collect_whatshap_res") {
 } else if (args$function_name == "subset_vcf_to_singlesample") {
   subset_vcf_to_singlesample(args$subset_vcf_allsamples, args$sample, args$subset_vcf_singlesample_vcf, args$subset_vcf_singlesample_vcf_gz, args$bgzip_bin, args$bcftools_bin)
 } else if (args$function_name == "get_fasta_and_shred") {
-  get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$asm_chunked_fasta, args$bedtools_bin)
+  get_fasta_and_shred(args$sample, args$hap, args$region, args$chunklen, args$res_path, args$out_fa, args$bedtools_bin)
 } else {
   print("No function name given.")
 }

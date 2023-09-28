@@ -30,7 +30,7 @@ rule all:
     input:
         i1 = expand("res/actions_all_{chunklen}.tsv",chunklen=config['chunklen']),
         i2 = expand('res/actions/{region}_{sample}_h{hap}_{chunklen}.tsv', region=REGIONS, sample=SAMPLES, hap=HAPS, chunklen=config['chunklen']),
-        #i3 = expand('res/vcf/NW_flipped_{chunklen}.vcf', chunklen=config['chunklen'])
+        i3 = expand('res/vcf/NW_flipped_{chunklen}.vcf', chunklen=config['chunklen'])
 
 rule flip:
     input:
@@ -131,9 +131,15 @@ rule get_haptags:
         haptags = "/scratch/hoeps/bamsam/{sample}_h{hap}_{region}_{chunklen}.bam_tags.tsv"
     params:
         hg38_fa = config['hg38_fa'],
-        whatshap_bin = config['whatshap_bin']
+        whatshap_bin = config['whatshap_bin'],
+        samtools_bin = config['samtools_bin']
     shell:
         """
+        if ! {params.samtools_bin} view {input.bam} | grep -v '^@' | head -1 &> /dev/null; then
+            cp workflow/data/empty_tags.tsv {output.haptags}
+            exit 0
+        fi 
+
         sample_name="{wildcards.sample}"
 
         if [ "$sample_name" == "HG002" ]; then
@@ -167,13 +173,13 @@ rule get_fasta_and_shred:
     shell:
         """
          Rscript workflow/scripts/phasing_helpers.R \
-                --function get_fasta_and_shred \
+                --function_name get_fasta_and_shred \
                 --sample {wildcards.sample} \
                 --hap {wildcards.hap} \
                 --region {wildcards.region} \
                 --chunklen {params.chunklen} \
                 --res_path {params.nw_res_path} \
-                --asm_chunked_fasta {output.asm_chunked_fasta} \
+                --out_fa {output.asm_chunked_fasta} \
                 --bedtools_bin {params.bedtools_bin}
         """
 
