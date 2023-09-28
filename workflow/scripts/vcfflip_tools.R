@@ -50,7 +50,6 @@ process_vcf <- function(vcf_filename, action_list, output_filename) {
       
       modified_gt = modify_genotype(gt, action, stats)
       stats[[action]] <- stats[[action]] + 1
-      print(stats)
       # Update the genotype with any modifications, keeping the custom phase block
       vcf@gt[i, sample] <- paste0(modified_gt, custom_phase_block)
       
@@ -116,8 +115,6 @@ args <- parser$parse_args()
 actions_df <- read.table(args$actions, header=FALSE, stringsAsFactors=FALSE, sep='\t')
 actions <- process_actions(actions_df)
 stats <- process_vcf(args$vcf, actions, args$vcfout)
-print('hi')
-print(stats)
 writeLines(as.character(stats), args$logout)
 
 
