@@ -135,7 +135,7 @@ rule get_haptags:
         samtools_bin = config['samtools_bin']
     shell:
         """
-        if ! {params.samtools_bin} view {input.bam} | grep -v '^@' | head -1 &> /dev/null; then
+        if ! samtools view {input.bam} | grep -v '^@' | awk '{{ if (($2 & 4) == 0) exit 1 }}' &> /dev/null; then
             cp workflow/data/empty_tags.tsv {output.haptags}
             exit 0
         fi 

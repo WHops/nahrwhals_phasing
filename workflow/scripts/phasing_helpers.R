@@ -244,7 +244,6 @@ parser$add_argument("--out_fa")
 
 args <- parser$parse_args()
 
-print('eeh')
 if (args$function_name == "collect_whatshap_res") {
   collect_whatshap_res(args$haptags, args$sample, args$region, args$hap, args$summarylist_link)
 } else if (args$function_name == "evaluate_summarylist") {
