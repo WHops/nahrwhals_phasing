@@ -85,7 +85,8 @@ get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fas
   # And then we grep those out of the whole list. 
   asm_fasta <- grep(regex, list.files(path = dir_path, full.names = TRUE), value = TRUE)
   #asm_chunked_fasta = paste0(asm_fasta, '_chunked_phasing.fa')
-
+  print(nonsense)
+  browser()
   # Use shred_seq_bedtools to turn this into chunks.
   shred_seq_bedtools(asm_fasta, out_fasta, chunklen, bedtools_bin)
 }
