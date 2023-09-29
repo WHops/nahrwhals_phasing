@@ -7,6 +7,19 @@ process_actions <- function(actions_df) {
     sample <- actions_df$V2[i]
     h1_action <- actions_df$V4[i]
     h2_action <- actions_df$V4[i+1]
+
+    # if one h1 or h2 are 'unclear', then we use the action of the one that is not unclear
+    # if both are unclear, then we use 'unphase'
+    if(h1_action == 'unclear' && h2_action == 'unclear') {
+      final_action <- 'unphase'
+    } else if(h1_action == 'unclear') {
+      final_action <- h2_action
+    } else if(h2_action == 'unclear') {
+      final_action <- h1_action
+    } else {
+      final_action <- ifelse(h1_action == h2_action, h1_action, 'unphase')
+    }
+
     final_action <- ifelse(h1_action == h2_action, h1_action, 'unphase')
     action_list[[region]][[sample]] <- final_action
   }
