@@ -136,8 +136,9 @@ rule get_haptags:
     shell:
         """
         echo {input.bam}
-        if {params.samtools_bin} view -F 4 {input.bam} | head -1 | grep -q '.*'; then
+        if  ! {params.samtools_bin} view -F 4 {input.bam} | head -1 | grep -q '.*'; then
             echo NOT EMPTY 
+            echo SUPPOSEDLY...
             {params.whatshap_bin} haplotag \
                 -o {input.bam}_tagged.bam \
                 --reference {params.hg38_fa} \
