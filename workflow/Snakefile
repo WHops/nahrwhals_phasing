@@ -139,6 +139,15 @@ rule get_haptags:
         if  ! {params.samtools_bin} view -F 4 {input.bam} | head -1 | grep -q '.*'; then
             echo NOT EMPTY 
             echo SUPPOSEDLY...
+
+            if [ "$sample_name" == "HG002" ]; then
+                vcf_samplename="NA24385"
+            elif [[ "$sample_name" == GM* ]]; then
+                vcf_samplename=${{sample_name//GM/NA}}  # double curly braces for Snakemake to escape them
+            else
+                vcf_samplename="$sample_name"
+            fi
+
             {params.whatshap_bin} haplotag \
                 -o {input.bam}_tagged.bam \
                 --reference {params.hg38_fa} \
