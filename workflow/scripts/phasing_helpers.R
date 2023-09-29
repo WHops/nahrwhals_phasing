@@ -36,7 +36,7 @@ shred_seq_bedtools <- function(infasta,
                                outfasta_chunk,
                                chunklen,
                                bedtools_bin) {
-
+  
   chunklen = as.numeric(chunklen)
   # Write a temporary bedfile that will be removed at the end of the function
   bed_tmp_file <- paste0("tmpbed_deleteme_", sprintf("%.0f", runif(1, 1e13, 1e14)), ".bed")
@@ -46,20 +46,22 @@ shred_seq_bedtools <- function(infasta,
   # To work well.
   name_len_df <- read.table(fasta_awk_tmp_file)
   contigname <- sub(">", "", (name_len_df)[1, ])
-  contiglen <- as.numeric((name_len_df)[2, ])
-
+  contiglen <- as.numeric(as.character((name_len_df)[2, ]))
   bed_df <- data.frame(
     seqnames = contigname,
     start = sprintf("%d", seq(0, contiglen - (contiglen %% chunklen), by = chunklen)),
     end = sprintf("%d", pmin(seq(0, contiglen - (contiglen %% chunklen), by = chunklen) + (chunklen - 1), contiglen))
   )
 
+  print(bed_df)
   write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
   print(bed_df)
 
   system(paste0("rm ", infasta, ".fai"))
 
   sedcmd <- "sed -r \'s/(.*):/\\1_/'"
+  
+  print(paste0(bedtools_bin, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
   system(paste0(bedtools_bin, " getfasta -fi ", infasta, " -bed ", bed_tmp_file, " | ", sedcmd, " > ", outfasta_chunk))
 
   system(paste0("rm ", bed_tmp_file))
@@ -75,7 +77,7 @@ shred_seq_bedtools <- function(infasta,
 #' @export
 get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fa, bedtools_bin){
     # Find the correct chunked reads fasta
-  dir_path = paste0(res_path, region, '/fasta')
+  dir_path = paste0(res_path, region, '/fasta/')
 
 
   #Criteria: filename has to match sample, hapx or hx and end on y.fa
@@ -84,20 +86,19 @@ get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fa,
   # And then we grep those out of the whole list. 
   asm_fasta <- grep(regex, list.files(path = dir_path, full.names = TRUE), value = TRUE)
 
-  print(nonsense)
-
   #asm_chunked_fasta = paste0(asm_fasta, '_chunked_phasing.fa')
   if (length(asm_fasta) > 0){ 
     # Use shred_seq_bedtools to turn this into chunks.
     shred_seq_bedtools(asm_fasta, out_fa, chunklen, bedtools_bin)
   } else {
     system(paste0('touch ', out_fa))
+    print("No fasta entries found")
   }
 }
 
 
 
-#' @title determine_phase_with_whatshap
+#' @title subset_vcf_to_singlesample
 #' @export
 subset_vcf_to_singlesample <- function(input_vcf_allsamples, sample, 
                                        output_vcf_singlesample_vcf, output_vcf_singlesample_vcf_gz, 
@@ -158,13 +159,22 @@ evaluate_summarylist <- function(summarylist, actionlist){
   if (is.null(xx$none)){
     xx$none = 0
   }
+  
+  xx$H1 = as.numeric(as.character(xx$H1))
+  xx$H2 = as.numeric(as.character(xx$H2))
+  
+  if (is.null(xx$H1)){
+    xx$H1 = 0
+  } else if (is.null(xx$H2)){
+    xx$H2 = 0
+  }
 
+  print(xx)
   # Dirty bug killing:
-  if ((xx$H1 + xx$H2) == 0){
+  if ((as.numeric(as.character(xx$H1)) + (as.numeric(as.character(xx$H2)))) == 0){
   xx$H1 = 1
   xx$H2 = 1
   }
-
 
   h1_to_h2_fract =  xx$H1 / (xx$H1 + xx$H2)
   if (is.na(h1_to_h2_fract)){
@@ -180,7 +190,7 @@ evaluate_summarylist <- function(summarylist, actionlist){
   } else {
     mapped_hap = 'unclear'
   }
-
+  
   # Determine action.
   if (asm_hap == mapped_hap){
     action = 'keep'
@@ -189,7 +199,6 @@ evaluate_summarylist <- function(summarylist, actionlist){
   } else if (mapped_hap == 'unclear'){
     action = 'unclear'
   }
-
   # Columns of the final_actionlist: region, sample, asm_hap, action, reads_H1, reads_H2, reads_unphased, h1_to_h2_fract, none_fract
   final_actionlist = paste0(paste(region, 
                                   sample,
