@@ -55,7 +55,7 @@ shred_seq_bedtools <- function(infasta,
   )
 
   write.table(bed_df, file = bed_tmp_file, sep = "\t", quote = F, row.names = F, col.names = F)
-
+  print(bed_df)
 
   system(paste0("rm ", infasta, ".fai"))
 
@@ -85,7 +85,7 @@ get_fasta_and_shred <- function(sample, hap, region, chunklen, res_path, out_fa,
   asm_fasta <- grep(regex, list.files(path = dir_path, full.names = TRUE), value = TRUE)
 
   print(nonsense)
-  
+
   #asm_chunked_fasta = paste0(asm_fasta, '_chunked_phasing.fa')
   if (length(asm_fasta) > 0){ 
     # Use shred_seq_bedtools to turn this into chunks.
