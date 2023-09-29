@@ -135,7 +135,7 @@ rule get_haptags:
         samtools_bin = config['samtools_bin']
     shell:
         """
-        if samtools view -F 4 {input} | head -1 | grep -q '.*'; then
+        if samtools view -F 4 {input.bam} | head -1 | grep -q '.*'; then
             echo NOT EMPTY 
             {params.whatshap_bin} haplotag \
                 -o {input.bam}_tagged.bam \
@@ -149,28 +149,7 @@ rule get_haptags:
             echo EMPTY
             cp workflow/data/empty_tags.tsv {output.haptags}
         fi
-      
-                        
-        echo NOT EMPTY 
-        sample_name="{wildcards.sample}"
-        if [ "$sample_name" == "HG002" ]; then
-            vcf_samplename="NA24385"
-        elif [[ "$sample_name" == GM* ]]; then
-            vcf_samplename=${{sample_name//GM/NA}}  # double curly braces for Snakemake to escape them
-        else
-            vcf_samplename="$sample_name"
-        fi
-        
-        echo $vcf_samplename
-        
-        {params.whatshap_bin} haplotag \
-            -o {input.bam}_tagged.bam \
-            --reference {params.hg38_fa} \
-            {input.vcf_singlesample} \
-            --sample $vcf_samplename \
-            --output-haplotag-list {output.haptags} \
-            --ignore-read-groups \
-            {input.bam}
+
         """
 
 rule get_fasta_and_shred:
