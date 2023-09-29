@@ -135,7 +135,8 @@ rule get_haptags:
         samtools_bin = config['samtools_bin']
     shell:
         """
-        if samtools view -F 4 {input.bam} | head -1 | grep -q '.*'; then
+        echo {input.bam}
+        if {params.samtools_bin} view -F 4 {input.bam} | head -1 | grep -q '.*'; then
             echo NOT EMPTY 
             {params.whatshap_bin} haplotag \
                 -o {input.bam}_tagged.bam \
