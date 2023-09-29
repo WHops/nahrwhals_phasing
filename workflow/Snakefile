@@ -135,19 +135,21 @@ rule get_haptags:
         samtools_bin = config['samtools_bin']
     shell:
         """
-        # THIS LINE IS LYING I KNOW THAT IT IS WRONGGGGG!!!!!
-        ## it keeps putting 
-        # Try to find an aligned read and store exit status
-        samtools view {input.bam} | grep -v '^@' | awk '($2 % 2 == 0 && ($2 < 4 || $2 > 7)) {{exit 1}}'
-        aligned_read_found=$?
-
-        # Check the stored exit status
-        if [ "$aligned_read_found" -ne 1 ]; then
-            # If no aligned reads are found
-            cp workflow/data/empty_tags.tsv {output.haptags}
+        if samtools view -F 4 {input} | head -1 | grep -q '.*'; then
+            echo NOT EMPTY 
+            {params.whatshap_bin} haplotag \
+                -o {input.bam}_tagged.bam \
+                --reference {params.hg38_fa} \
+                {input.vcf_singlesample} \
+                --sample {wildcards.sample} \
+                --output-haplotag-list {output.haptags} \
+                --ignore-read-groups \
+                {input.bam}
+        else
             echo EMPTY
-            exit 0
+            cp workflow/data/empty_tags.tsv {output.haptags}
         fi
+      
                         
         echo NOT EMPTY 
         sample_name="{wildcards.sample}"
