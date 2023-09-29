@@ -135,32 +135,36 @@ rule get_haptags:
         samtools_bin = config['samtools_bin']
     shell:
         """
-        echo {input.bam}
-        if  ! {params.samtools_bin} view -F 4 {input.bam} | head -1 | grep -q '.*'; then
-            echo NOT EMPTY 
-            echo SUPPOSEDLY...
-
-            if [ "$sample_name" == "HG002" ]; then
-                vcf_samplename="NA24385"
-            elif [[ "$sample_name" == GM* ]]; then
-                vcf_samplename=${{sample_name//GM/NA}}  # double curly braces for Snakemake to escape them
-            else
-                vcf_samplename="$sample_name"
-            fi
-
-            {params.whatshap_bin} haplotag \
-                -o {input.bam}_tagged.bam \
-                --reference {params.hg38_fa} \
-                {input.vcf_singlesample} \
-                --sample $vcf_samplename \
-                --output-haplotag-list {output.haptags} \
-                --ignore-read-groups \
-                {input.bam}
-        else
-            echo EMPTY
+        
+        # THIS LINE IS LYING I KNOW THAT IT IS WRONGGGGG!!!!!
+        # it keeps putting 
+        if samtools view {input.bam} | grep -v '^@' | awk '{{ if (($2 & 4) == 0) exit 1 }}' &> /dev/null; then
+            # If no aligned reads are found
             cp workflow/data/empty_tags.tsv {output.haptags}
+            echo EMPTY
+            exit 0
         fi
-
+        
+        echo NOT EMPTY 
+        sample_name="{wildcards.sample}"
+        if [ "$sample_name" == "HG002" ]; then
+            vcf_samplename="NA24385"
+        elif [[ "$sample_name" == GM* ]]; then
+            vcf_samplename=${{sample_name//GM/NA}}  # double curly braces for Snakemake to escape them
+        else
+            vcf_samplename="$sample_name"
+        fi
+        
+        echo $vcf_samplename
+        
+        {params.whatshap_bin} haplotag \
+            -o {input.bam}_tagged.bam \
+            --reference {params.hg38_fa} \
+            {input.vcf_singlesample} \
+            --sample $vcf_samplename \
+            --output-haplotag-list {output.haptags} \
+            --ignore-read-groups \
+            {input.bam}
         """
 
 rule get_fasta_and_shred:
