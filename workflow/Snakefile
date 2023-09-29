@@ -143,7 +143,7 @@ rule get_haptags:
                 -o {input.bam}_tagged.bam \
                 --reference {params.hg38_fa} \
                 {input.vcf_singlesample} \
-                --sample {wildcards.sample} \
+                --sample $vcf_samplename \
                 --output-haplotag-list {output.haptags} \
                 --ignore-read-groups \
                 {input.bam}
