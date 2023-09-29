@@ -20,7 +20,7 @@ SAMPLES = f.read().split("\n")[:-1]
 f.close()
 print(SAMPLES)
 
-HAPS = ['1', '2']
+HAPS = ['1']#, '2']
 print(HAPS)
 
 
