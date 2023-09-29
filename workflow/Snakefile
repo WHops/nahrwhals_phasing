@@ -141,14 +141,16 @@ rule get_haptags:
 
         # THIS LINE IS LYING I KNOW THAT IT IS WRONGGGGG!!!!!
         ## it keeps putting 
-        if ! samtools view {input.bam} | grep -v '^@' | awk '{{ if ($2 % 2 == 0 && ($2 < 4 || $2 > 7)) exit 1 }}' &> /dev/null; then
-
+        aligned_read_count=$(samtools view {input.bam} | grep -v '^@' | awk '($2 % 2 == 0 && ($2 < 4 || $2 > 7)) {print "yes"; exit}' | wc -l)
+        echo "aligned_read_count"
+        echo $aligned_read_count
+        if [ "$aligned_read_count" -eq "0" ]; then
             # If no aligned reads are found
             cp workflow/data/empty_tags.tsv {output.haptags}
             echo EMPTY
             exit 0
         fi
-        
+                
         echo NOT EMPTY 
         sample_name="{wildcards.sample}"
         if [ "$sample_name" == "HG002" ]; then
