@@ -159,7 +159,7 @@ rule get_haptags:
                 --output-haplotag-list {output.haptags} \
                 --ignore-read-groups \
                 {input.bam}
-        else if ! samtools view -F 4 {input.bam} | head -1 | grep -q '.*'; then
+        else # if ! samtools view -F 4 {input.bam} | head -1 | grep -q '.*'; then
             # If no aligned reads are found
             cp workflow/data/empty_tags.tsv {output.haptags}
             echo EMPTY
