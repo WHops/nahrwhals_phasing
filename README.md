@@ -86,5 +86,5 @@ After running the Snakefile, you need to post-process the results to merge the B
     ```
 3. Run the BCF merging script with the generated BCF files:
     ```shell
-    ./merge_bcf.sh NW_flipped_50000.bcf allregions_allsamples.vcf.gz merged_output.vcf.gz
+    ./merge_bcfs.sh custom_header.txt NW_flipped_50000.bcf allregions_allsamples.vcf.gz merged_output.vcf.gz
     ```
