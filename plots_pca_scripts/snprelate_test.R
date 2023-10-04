@@ -244,9 +244,10 @@ main <- function(vcf_gz, pop_file, gds_file, snp_id_targets, ld.threshold){
   # Plottings
   plot_scatter(x, pc.percent, superpopCol)
   
-  # Now towards the dendro
+  # Now towards the dendro. THERE IS A BUG HERE SOMEWHERE; HG00731 and HG00733 should be ./.!
   dendro_data <- prepare_dendrogram_data(genofile, x, superpopCol, snp_id_targets)
   plot_dendrogram(dendro_data$dend, x, superpopCol, dendro_data$NW_gts_colors_matrix, dendro_data$my_palette)
+
 }
 
 
